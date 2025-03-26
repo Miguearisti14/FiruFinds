@@ -21,14 +21,21 @@ export default function Auth() {
 
 
     async function signInWithEmail() {
-        setLoading(true)
-        const { error } = await supabase.auth.signInWithPassword({
-            email: email,
-            password: password,
-        })
+        setLoading(true);
 
-        if (error) Alert.alert(error.message)
-        setLoading(false)
+        const { error } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+        });
+
+        setLoading(false);
+
+        if (error) {
+            Alert.alert(error.message);
+            return false; // Indica que falló el inicio de sesión
+        }
+
+        return true; // Indica que fue exitoso
     }
 
 
@@ -64,7 +71,12 @@ export default function Auth() {
             <Button
                 title="Iniciar Sesión"
                 disabled={loading}
-                onPress={signInWithEmail}
+                onPress={async () => {
+                    const success = await signInWithEmail(); // Espera el resultado
+                    if (success) {
+                        router.push('/(tabs)/home'); // Redirige solo si fue exitoso
+                    }
+                }}
                 buttonStyle={styles.button}
                 titleStyle={styles.buttonText}
             />
