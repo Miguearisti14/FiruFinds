@@ -235,12 +235,8 @@ export default function Perdido() {
         }
     };
 
-    const handleReport = async () => {
+    const handleReport = async (tipoReporte) => {
         // Verificar que se hayan completado los campos obligatorios
-        if (!petName || !healthStatus) {
-            alert('Por favor completa los campos: Nombre de la mascota, Estado de salud y Valor de recompensa.');
-            return;
-        }
         if (!coordinates) {
             alert('Por favor selecciona una ubicación en el mapa.');
             return;
@@ -296,7 +292,7 @@ export default function Perdido() {
             setPetName('');
             setHealthStatus('');
 
-            router.push('/agradecimiento_log');
+            router.push(`/agradecimiento_log?tipoReporte=${tipoReporte}`);
         }
     };
 
@@ -314,7 +310,7 @@ export default function Perdido() {
                     <View style={styles.imageSection}>
                         <View style={styles.textContainer}>
                             <Text style={styles.title}>
-                                Tómale una foto a la mascota que perdiste y súbela
+                                Tómale una foto a la mascota que encontraste y súbela
                             </Text>
                         </View>
                         <TouchableOpacity style={styles.imageContainer} onPress={pickImage}>
@@ -330,7 +326,7 @@ export default function Perdido() {
                     </View>
 
                     {/* Mapa para seleccionar ubicación */}
-                    <Text style={styles.label}>¿Dónde se perdió?</Text>
+                    <Text style={styles.label}>¿Dónde la encontraste?</Text>
                     <View style={styles.mapContainer}>
                         <MapView
                             style={styles.map}
@@ -350,7 +346,7 @@ export default function Perdido() {
                     </View>
 
                     {/* Punto de referencia */}
-                    <Text style={styles.label}>Añade un punto de referencia</Text>
+                    <Text style={styles.label}>Añade un punto de referencia (opcional)</Text>
                     <TextInput
                         style={styles.input}
                         placeholder="Al lado de..."
@@ -359,7 +355,7 @@ export default function Perdido() {
                     />
 
                     {/* Campo: Nombre de la mascota */}
-                    <Text style={styles.label}>Nombre de la mascota</Text>
+                    <Text style={styles.label}>Nombre de la mascota (opcional)</Text>
                     <TextInput
                         style={styles.input}
                         placeholder="Ingresa el nombre"
@@ -368,7 +364,7 @@ export default function Perdido() {
                     />
 
                     {/* Campo: Estado de salud */}
-                    <Text style={styles.label}>Estado de salud</Text>
+                    <Text style={styles.label}>Estado de salud (opcional)</Text>
                     <TextInput
                         style={styles.input}
                         placeholder="Ej: Herida, sana, etc."
@@ -423,7 +419,7 @@ export default function Perdido() {
                         }}
                     />
 
-                    <TouchableOpacity style={styles.button} onPress={handleReport} disabled={uploading}>
+                    <TouchableOpacity style={styles.button} onPress={() => handleReport('encontrados')} disabled={uploading}>
                         {uploading ? (
                             <ActivityIndicator color="#FFF" />
                         ) : (

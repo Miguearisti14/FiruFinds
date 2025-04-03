@@ -108,7 +108,7 @@ export default function Perdido() {
     // Estados para los campos nuevos en reportes perdidos
     const [petName, setPetName] = useState(''); // nombre de la mascota
     const [healthStatus, setHealthStatus] = useState(''); // estado de salud
-    const [reward, setReward] = useState(''); // valor de recompensa
+    const [reward, setReward] = useState('0'); // valor de recompensa
     const router = useRouter();
 
 
@@ -236,9 +236,9 @@ export default function Perdido() {
         }
     };
 
-    const handleReport = async () => {
+    const handleReport = async (tipoReporte) => {
         // Verificar que se hayan completado los campos obligatorios
-        if (!petName || !healthStatus || !reward) {
+        if (!petName || !healthStatus) {
             alert('Por favor completa los campos: Nombre de la mascota, Estado de salud y Valor de recompensa.');
             return;
         }
@@ -299,7 +299,7 @@ export default function Perdido() {
             setHealthStatus('');
             setReward('');
 
-            router.push('/agradecimiento_log');
+            router.push(`/agradecimiento_log?tipoReporte=${tipoReporte}`);
         }
     };
 
@@ -353,7 +353,7 @@ export default function Perdido() {
                     </View>
 
                     {/* Punto de referencia */}
-                    <Text style={styles.label}>Añade un punto de referencia</Text>
+                    <Text style={styles.label}>Añade un punto de referencia (opcional)</Text>
                     <TextInput
                         style={styles.input}
                         placeholder="Al lado de..."
@@ -380,7 +380,7 @@ export default function Perdido() {
                     />
 
                     {/* Campo: Valor de recompensa */}
-                    <Text style={styles.label}>Valor de recompensa</Text>
+                    <Text style={styles.label}>Valor de recompensa (opcional)</Text>
                     <TextInput
                         style={styles.input}
                         placeholder="Ingresa el monto"
@@ -436,7 +436,7 @@ export default function Perdido() {
                         }}
                     />
 
-                    <TouchableOpacity style={styles.button} onPress={handleReport} disabled={uploading}>
+                    <TouchableOpacity style={styles.button} onPress={() => handleReport('perdidos')} disabled={uploading}>
                         {uploading ? (
                             <ActivityIndicator color="#FFF" />
                         ) : (

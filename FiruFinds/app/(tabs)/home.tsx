@@ -27,7 +27,7 @@ const LostPetsScreen = () => {
 
                     .from('reportes_perdidos')
 
-                    .select('*')
+                    .select('id, image_url, razas(nombre)')
                     .limit(20);
 
                 if (error) {
@@ -49,7 +49,7 @@ const LostPetsScreen = () => {
             data={lostPets}
             renderItem={({ item }) => (
                 <PetCard
-                    title={item.punto_referencia || 'Sin referencia'} // Usamos punto_referencia como título
+                    title={item.razas?.nombre || 'Raza desconocida'} // Usamos punto_referencia como título
                     image={item.image_url || 'https://via.placeholder.com/150'} // Usamos image_url para la imagen
                 />
 
@@ -84,7 +84,7 @@ const FoundPetsScreen = () => {
 
                     .from('reportes_encontrados')
 
-                    .select('*')
+                    .select('id, image_url, razas(nombre)')
                     .limit(20);
 
                 if (error) {
@@ -107,7 +107,7 @@ const FoundPetsScreen = () => {
             data={foundPets}
             renderItem={({ item }) => (
                 <PetCard
-                    title={item.punto_referencia || 'Sin referencia'} // Usamos punto_referencia como título
+                    title={item.razas?.nombre || 'Raza desconocida'} // Usamos punto_referencia como título
                     image={item.image_url || 'https://via.placeholder.com/150'} // Usamos image_url para la imagen
                 />
 

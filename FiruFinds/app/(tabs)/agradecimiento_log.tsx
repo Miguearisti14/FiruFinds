@@ -1,17 +1,20 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 
 export default function Agradecimiento() {
     const router = useRouter();
+    const { tipoReporte } = useLocalSearchParams();
+
+    const mensaje = tipoReporte === 'perdidos'
+        ? "Gracias por tu reporte, ya estamos un paso más cerca de hallar a tu mascota"
+        : "Gracias por tu reporte, con tu ayuda podremos reunir una familia";
+
 
     return (
         <View style={styles.container}>
             <Image source={require('@/assets/images/agradecimiento.png')} style={styles.image} />
-            <Text style={styles.message}>
-                Gracias por tu reporte, con tu ayuda{'\n'}
-                podremos reunir una familia
-            </Text>
+            <Text style={styles.message}>{mensaje}</Text>
             <TouchableOpacity onPress={() => router.push("/home")}>
                 <Text style={styles.volver}>Volver al inicio</Text>
             </TouchableOpacity>
