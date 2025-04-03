@@ -41,7 +41,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="reportes"
         options={{
           tabBarIcon: ({ color }) => <MaterialCommunityIcons name="clipboard-text" size={28} color={color} />
         }}

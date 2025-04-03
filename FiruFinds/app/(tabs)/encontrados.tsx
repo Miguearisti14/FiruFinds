@@ -16,12 +16,13 @@ import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../../lib/supabase';
 import { useRouter } from 'expo-router';
+
 
 // Componente de autocompletado para dropdowns
 const SearchableDropdown = ({ data, value, onSelect, placeholder, disabled }) => {
-    const [query, setQuery] = useState(value || '');
+    const [query, setQuery] = useState(typeof value === 'string' ? value : '');
     const [filteredData, setFilteredData] = useState([]);
     const [showDropdown, setShowDropdown] = useState(false);
 
@@ -48,7 +49,7 @@ const SearchableDropdown = ({ data, value, onSelect, placeholder, disabled }) =>
             <TextInput
                 style={[
                     pickerSelectStyles.inputIOS,
-                    disabled ? { backgroundColor: '#eee' } : {}
+                    disabled ? { backgroundColor: '#eee' } : {},
                 ]}
                 placeholder={placeholder}
                 value={query}
@@ -60,10 +61,7 @@ const SearchableDropdown = ({ data, value, onSelect, placeholder, disabled }) =>
             />
             {showDropdown && filteredData.length > 0 && !disabled && (
                 <View style={styles.dropdown}>
-                    <ScrollView
-                        nestedScrollEnabled={true}
-                        style={{ maxHeight: 150 }} // Puedes ajustar el alto según necesites
-                    >
+                    <ScrollView nestedScrollEnabled style={{ maxHeight: 150 }}>
                         {filteredData.map(item => (
                             <TouchableOpacity
                                 key={item.id}
@@ -83,51 +81,52 @@ const SearchableDropdown = ({ data, value, onSelect, placeholder, disabled }) =>
     );
 };
 
-export default function Rapido() {
-    const [location, setLocation] = useState('');
+export default function Perdido() {
+    // Estados para campos generales
     const [reference, setReference] = useState('');
-    const [phone, setPhone] = useState('');
     const [uploading, setUploading] = useState(false);
-    const [imageUri, setImageUri] = useState(null);
-    const [coordinates, setCoordinates] = useState(null);
+    const [imageUri, setImageUri] = useState<string | null>(null);
+    const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
     const [initialRegion, setInitialRegion] = useState({
         latitude: 6.2442,  // Medellín, Colombia
         longitude: -75.5812,
         latitudeDelta: 0.05,
         longitudeDelta: 0.05,
     });
-    // Estados para los nuevos campos de selección
-    const [especie, setEspecie] = useState(null);
-    const [raza, setRaza] = useState(null);
-    const [color, setColor] = useState(null);
-    const [tamano, setTamano] = useState(null);
-    // Estados para los datos de los dropdowns
-    const [especies, setEspecies] = useState([]);
-    const [razas, setRazas] = useState([]);
-    const [colores, setColores] = useState([]);
-    const [tamanos, setTamanos] = useState([]);
-    const [selectedEspecieId, setSelectedEspecieId] = useState(null);
+
+    // Estados para campos de selección (dropdowns)
+    const [especie, setEspecie] = useState<number | null>(null);
+    const [raza, setRaza] = useState<number | null>(null);
+    const [color, setColor] = useState<number | null>(null);
+    const [tamano, setTamano] = useState<number | null>(null);
+    const [especies, setEspecies] = useState<any[]>([]);
+    const [razas, setRazas] = useState<any[]>([]);
+    const [colores, setColores] = useState<any[]>([]);
+    const [tamanos, setTamanos] = useState<any[]>([]);
+    const [selectedEspecieId, setSelectedEspecieId] = useState<number | null>(null);
+
+    // Estados para los campos nuevos en reportes perdidos
+    const [petName, setPetName] = useState(''); // nombre de la mascota
+    const [healthStatus, setHealthStatus] = useState(''); // estado de salud
     const router = useRouter();
 
-    // Cargar datos de las tablas de Supabase para los dropdowns
+
+    // Cargar datos de los dropdowns desde Supabase
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // Cargar especies
                 const { data: especiesData, error: especiesError } = await supabase
                     .from('especies')
                     .select('*');
                 if (especiesError) throw especiesError;
                 setEspecies(especiesData || []);
 
-                // Cargar colores
                 const { data: coloresData, error: coloresError } = await supabase
                     .from('colores')
                     .select('*');
                 if (coloresError) throw coloresError;
                 setColores(coloresData || []);
 
-                // Cargar tamaños
                 const { data: tamanosData, error: tamanosError } = await supabase
                     .from('tamanos')
                     .select('*');
@@ -141,7 +140,7 @@ export default function Rapido() {
         fetchData();
     }, []);
 
-    // Cargar razas cuando cambie la especie seleccionada
+    // Cargar razas al cambiar la especie seleccionada
     useEffect(() => {
         const fetchRazas = async () => {
             try {
@@ -149,7 +148,6 @@ export default function Rapido() {
                     setRazas([]);
                     return;
                 }
-
                 const { data: razasData, error: razasError } = await supabase
                     .from('razas')
                     .select('*')
@@ -164,7 +162,7 @@ export default function Rapido() {
         fetchRazas();
     }, [selectedEspecieId]);
 
-    // Solicitar permisos de ubicación y obtener la ubicación actual
+    // Obtener ubicación actual
     useEffect(() => {
         (async () => {
             const { status } = await Location.requestForegroundPermissionsAsync();
@@ -175,7 +173,6 @@ export default function Rapido() {
 
             const userLocation = await Location.getCurrentPositionAsync({});
             const { latitude, longitude } = userLocation.coords;
-
             setCoordinates({ lat: latitude, lng: longitude });
             setInitialRegion({
                 latitude,
@@ -207,13 +204,11 @@ export default function Rapido() {
         try {
             setUploading(true);
             const imageName = `image-${Date.now()}.jpg`;
-
             const fileInfo = await FileSystem.getInfoAsync(imageUri);
             if (!fileInfo.exists) {
                 console.error('El archivo no existe');
                 return null;
             }
-
             const file = {
                 uri: imageUri,
                 name: imageName,
@@ -226,12 +221,10 @@ export default function Rapido() {
                     contentType: 'image/jpeg',
                     upsert: false,
                 });
-
             if (error) {
                 console.error('Error al subir imagen:', error.message);
                 return null;
             }
-
             const publicUrl = supabase.storage.from('images').getPublicUrl(imageName).data.publicUrl;
             return publicUrl;
         } catch (err) {
@@ -243,9 +236,9 @@ export default function Rapido() {
     };
 
     const handleReport = async () => {
-        const imageUrl = await uploadImage();
-        if (!imageUrl) {
-            alert('Error al subir la imagen. Inténtalo nuevamente.');
+        // Verificar que se hayan completado los campos obligatorios
+        if (!petName || !healthStatus) {
+            alert('Por favor completa los campos: Nombre de la mascota, Estado de salud y Valor de recompensa.');
             return;
         }
         if (!coordinates) {
@@ -257,15 +250,30 @@ export default function Rapido() {
             return;
         }
 
+        const imageUrl = await uploadImage();
+        if (!imageUrl) {
+            alert('Error al subir la imagen. Inténtalo nuevamente.');
+            return;
+        }
+
+        // Obtener usuario actual (usuario_id)
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            alert('Usuario no autenticado');
+            return;
+        }
+
         const { error } = await supabase
             .from('reportes_encontrados')
             .insert([
                 {
+                    nombre: petName, //CAMPO OPCIONAL?
+                    estado_de_salud: healthStatus,
+                    usuario_id: user.id,
                     punto_referencia: reference,
-                    telefono: phone,
                     image_url: imageUrl,
                     ubicacion: { lat: coordinates.lat, lng: coordinates.lng },
-                    especie_id: especie,  // Puedes ajustar para enviar el ID en vez del nombre si es necesario
+                    especie_id: especie,
                     raza_id: raza,
                     color_id: color,
                     tamano_id: tamano,
@@ -276,9 +284,8 @@ export default function Rapido() {
             console.error('Error al guardar el reporte:', error.message);
             alert('Hubo un problema al guardar el reporte.');
         } else {
-            setLocation('');
+            // Resetear campos
             setReference('');
-            setPhone('');
             setImageUri(null);
             setCoordinates(null);
             setEspecie(null);
@@ -286,12 +293,14 @@ export default function Rapido() {
             setColor(null);
             setTamano(null);
             setSelectedEspecieId(null);
+            setPetName('');
+            setHealthStatus('');
 
-            router.push('/agradecimiento');
+            router.push('/agradecimiento_log');
         }
     };
 
-    const handleMapPress = (e) => {
+    const handleMapPress = (e: any) => {
         const { latitude, longitude } = e.nativeEvent.coordinate;
         setCoordinates({ lat: latitude, lng: longitude });
     };
@@ -301,10 +310,11 @@ export default function Rapido() {
             <SafeAreaView style={styles.safeArea}>
                 <StatusBar barStyle="dark-content" backgroundColor="#FFF" translucent={false} />
                 <View style={styles.container}>
+                    {/* Sección para subir imagen */}
                     <View style={styles.imageSection}>
                         <View style={styles.textContainer}>
                             <Text style={styles.title}>
-                                Tómale una foto a la mascota que encontraste y súbela
+                                Tómale una foto a la mascota que perdiste y súbela
                             </Text>
                         </View>
                         <TouchableOpacity style={styles.imageContainer} onPress={pickImage}>
@@ -318,7 +328,9 @@ export default function Rapido() {
                             )}
                         </TouchableOpacity>
                     </View>
-                    <Text style={styles.label}>¿Dónde la encontraste?</Text>
+
+                    {/* Mapa para seleccionar ubicación */}
+                    <Text style={styles.label}>¿Dónde se perdió?</Text>
                     <View style={styles.mapContainer}>
                         <MapView
                             style={styles.map}
@@ -337,6 +349,7 @@ export default function Rapido() {
                         )}
                     </View>
 
+                    {/* Punto de referencia */}
                     <Text style={styles.label}>Añade un punto de referencia</Text>
                     <TextInput
                         style={styles.input}
@@ -345,75 +358,72 @@ export default function Rapido() {
                         onChangeText={setReference}
                     />
 
-                    <Text style={styles.label}>Comparte un número para contactarte</Text>
+                    {/* Campo: Nombre de la mascota */}
+                    <Text style={styles.label}>Nombre de la mascota</Text>
                     <TextInput
                         style={styles.input}
-                        placeholder="301..."
-                        keyboardType="phone-pad"
-                        value={phone}
-                        onChangeText={setPhone}
+                        placeholder="Ingresa el nombre"
+                        value={petName}
+                        onChangeText={setPetName}
                     />
 
-                    {/* Campo: Especie */}
-                    <Text style={styles.label}>Especie de la mascota que encontraste</Text>
+                    {/* Campo: Estado de salud */}
+                    <Text style={styles.label}>Estado de salud</Text>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Ej: Herida, sana, etc."
+                        value={healthStatus}
+                        onChangeText={setHealthStatus}
+                    />
+
+                    {/* Dropdown: Especie */}
+                    <Text style={styles.label}>Especie de la mascota</Text>
                     <SearchableDropdown
                         data={especies}
-                        value={especie}
+                        value={''}
                         placeholder="Selecciona una especie..."
                         onSelect={(item) => {
-                            setEspecie(item);
                             setEspecie(item.id);
-                            setSelectedEspecieId(item);
                             setSelectedEspecieId(item.id);
-                            setRaza(null); // Reseteamos la raza al cambiar la especie
+                            setRaza(null); // Reinicia raza al cambiar especie
                         }}
                     />
 
-                    {/* Campo: Raza */}
-                    <Text style={styles.label}>Raza de la mascota que encontraste</Text>
+                    {/* Dropdown: Raza */}
+                    <Text style={styles.label}>Raza de la mascota</Text>
                     <SearchableDropdown
                         data={razas}
-                        value={raza}
+                        value={''}
                         placeholder="Selecciona una raza..."
                         onSelect={(item) => {
-                            setRaza(item);
                             setRaza(item.id);
-
                         }}
                         disabled={!selectedEspecieId}
                     />
 
-                    {/* Campo: Color */}
-                    <Text style={styles.label}>Color de la mascota que encontraste</Text>
+                    {/* Dropdown: Color */}
+                    <Text style={styles.label}>Color de la mascota</Text>
                     <SearchableDropdown
                         data={colores}
-                        value={color}
+                        value={''}
                         placeholder="Selecciona un color..."
                         onSelect={(item) => {
-                            setColor(item);
                             setColor(item.id);
-
                         }}
                     />
 
-                    {/* Campo: Tamaño */}
-                    <Text style={styles.label}>Tamaño de la mascota que encontraste</Text>
+                    {/* Dropdown: Tamaño */}
+                    <Text style={styles.label}>Tamaño de la mascota</Text>
                     <SearchableDropdown
                         data={tamanos}
-                        value={tamano}
+                        value={''}
                         placeholder="Selecciona un tamaño..."
                         onSelect={(item) => {
-                            setTamano(item);
                             setTamano(item.id);
-
                         }}
                     />
 
-                    <TouchableOpacity
-                        style={styles.button}
-                        onPress={handleReport}
-                        disabled={uploading}
-                    >
+                    <TouchableOpacity style={styles.button} onPress={handleReport} disabled={uploading}>
                         {uploading ? (
                             <ActivityIndicator color="#FFF" />
                         ) : (
@@ -437,6 +447,16 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
         marginBottom: 15,
+    },
+    imageSection: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 20,
+    },
+    textContainer: {
+        flex: 1,
+        paddingRight: 10,
     },
     imageContainer: {
         width: 120,
@@ -505,22 +525,11 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#FFF',
     },
-    imageSection: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: 20,
-    },
-    textContainer: {
-        flex: 1,
-        paddingRight: 10,
-    },
     // Estilos para el dropdown
     dropdownContainer: {
         marginBottom: 15,
     },
     dropdown: {
-
         borderWidth: 1,
         borderColor: '#ccc',
         backgroundColor: '#FFF',
@@ -532,7 +541,6 @@ const styles = StyleSheet.create({
     },
 });
 
-// Estilos personalizados para el input del dropdown (se reutilizan en SearchableDropdown)
 const pickerSelectStyles = StyleSheet.create({
     inputIOS: {
         borderWidth: 1,
