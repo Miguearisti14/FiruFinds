@@ -9,7 +9,7 @@ import {
     Image,
     StatusBar,
     SafeAreaView,
-    ScrollView
+    ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -18,56 +18,32 @@ import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { supabase } from '../lib/supabase';
 
-// Interfaces para las entidades de Supabase
-interface Especie { id: number; nombre: string; }
-interface Raza { id: number; nombre: string; especie_id: number; }
-interface Color { id: number; nombre: string; }
-interface Tamano { id: number; nombre: string; }
-interface Coordenadas { lat: number; lng: number; }
+// Componente de autocompletado para dropdowns
+const SearchableDropdown = ({ data, value, onSelect, placeholder, disabled }) => {
+    const [query, setQuery] = useState(value || '');
+    const [filteredData, setFilteredData] = useState([]);
+    const [showDropdown, setShowDropdown] = useState(false);
 
-interface SearchableDropdownProps {
-    data: Especie[] | Raza[] | Color[] | Tamano[];
-    value: number | null;
-    onSelect: (id: number) => void;
-    placeholder: string;
-    disabled?: boolean;
-}
-
-const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
-    data,
-    value,
-    onSelect,
-    placeholder,
-    disabled = false
-}) => {
-    const [query, setQuery] = useState<string>('');
-    const [filteredData, setFilteredData] = useState<(Especie | Raza | Color | Tamano)[]>([]);
-    const [showDropdown, setShowDropdown] = useState<boolean>(false);
-
-    // Si se selecciona un elemento, mostrar su nombre en el input
     useEffect(() => {
-        const selectedItem = data.find(item => item.id === value);
-        if (selectedItem) {
-            setQuery(selectedItem.nombre);
+        if (typeof value === 'string') {
+            setQuery(value);
         }
-    }, [value, data]);
+    }, [value]);
 
-    // Actualizar el filtrado cuando cambia el query
     useEffect(() => {
         if (query.length > 0) {
-            const filtered = data.filter(item =>
-                item.nombre.toLowerCase().includes(query.toLowerCase())
+            setFilteredData(
+                data.filter(item =>
+                    item.nombre.toLowerCase().includes(query.toLowerCase())
+                )
             );
-            setFilteredData(filtered);
-            setShowDropdown(true);
         } else {
-            setFilteredData([]);
-            setShowDropdown(false);
+            setFilteredData(data);
         }
     }, [query, data]);
 
     return (
-        <View style={[styles.dropdownContainer, { overflow: 'visible' }]}>
+        <View style={styles.dropdownContainer}>
             <TextInput
                 style={[
                     pickerSelectStyles.inputIOS,
@@ -75,25 +51,31 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
                 ]}
                 placeholder={placeholder}
                 value={query}
-                onChangeText={(text) => {
+                onChangeText={text => {
                     setQuery(text);
+                    setShowDropdown(true);
                 }}
                 editable={!disabled}
             />
             {showDropdown && filteredData.length > 0 && !disabled && (
-                <View style={styles.dropdownList}>
-                    {filteredData.map(item => (
-                        <TouchableOpacity
-                            key={item.id}
-                            onPress={() => {
-                                onSelect(item.id);
-                                setQuery(item.nombre);
-                                setShowDropdown(false);
-                            }}
-                        >
-                            <Text style={styles.dropdownItem}>{item.nombre}</Text>
-                        </TouchableOpacity>
-                    ))}
+                <View style={styles.dropdown}>
+                    <ScrollView
+                        nestedScrollEnabled={true}
+                        style={{ maxHeight: 150 }} // Puedes ajustar el alto según necesites
+                    >
+                        {filteredData.map(item => (
+                            <TouchableOpacity
+                                key={item.id}
+                                onPress={() => {
+                                    onSelect(item);
+                                    setQuery(item.nombre);
+                                    setShowDropdown(false);
+                                }}
+                            >
+                                <Text style={styles.dropdownItem}>{item.nombre}</Text>
+                            </TouchableOpacity>
+                        ))}
+                    </ScrollView>
                 </View>
             )}
         </View>
@@ -101,62 +83,71 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
 };
 
 export default function Rapido() {
-    const [reference, setReference] = useState<string>('');
-    const [phone, setPhone] = useState<string>('');
-    const [uploading, setUploading] = useState<boolean>(false);
-    const [imageUri, setImageUri] = useState<string | null>(null);
-    const [coordinates, setCoordinates] = useState<Coordenadas | null>(null);
+    const [location, setLocation] = useState('');
+    const [reference, setReference] = useState('');
+    const [phone, setPhone] = useState('');
+    const [uploading, setUploading] = useState(false);
+    const [imageUri, setImageUri] = useState(null);
+    const [coordinates, setCoordinates] = useState(null);
     const [initialRegion, setInitialRegion] = useState({
-        latitude: 6.2442,
+        latitude: 6.2442,  // Medellín, Colombia
         longitude: -75.5812,
         latitudeDelta: 0.05,
         longitudeDelta: 0.05,
     });
-    const [especieId, setEspecieId] = useState<number | null>(null);
-    const [razaId, setRazaId] = useState<number | null>(null);
-    const [colorId, setColorId] = useState<number | null>(null);
-    const [tamanoId, setTamanoId] = useState<number | null>(null);
-    const [especies, setEspecies] = useState<Especie[]>([]);
-    const [razas, setRazas] = useState<Raza[]>([]);
-    const [colores, setColores] = useState<Color[]>([]);
-    const [tamanos, setTamanos] = useState<Tamano[]>([]);
-    const [selectedEspecieId, setSelectedEspecieId] = useState<number | null>(null);
+    // Estados para los nuevos campos de selección
+    const [especie, setEspecie] = useState(null);
+    const [raza, setRaza] = useState(null);
+    const [color, setColor] = useState(null);
+    const [tamano, setTamano] = useState(null);
+    // Estados para los datos de los dropdowns
+    const [especies, setEspecies] = useState([]);
+    const [razas, setRazas] = useState([]);
+    const [colores, setColores] = useState([]);
+    const [tamanos, setTamanos] = useState([]);
+    const [selectedEspecieId, setSelectedEspecieId] = useState(null);
 
+    // Cargar datos de las tablas de Supabase para los dropdowns
     useEffect(() => {
         const fetchData = async () => {
             try {
+                // Cargar especies
                 const { data: especiesData, error: especiesError } = await supabase
                     .from('especies')
                     .select('*');
                 if (especiesError) throw especiesError;
                 setEspecies(especiesData || []);
 
+                // Cargar colores
                 const { data: coloresData, error: coloresError } = await supabase
                     .from('colores')
                     .select('*');
                 if (coloresError) throw coloresError;
                 setColores(coloresData || []);
 
+                // Cargar tamaños
                 const { data: tamanosData, error: tamanosError } = await supabase
                     .from('tamanos')
                     .select('*');
                 if (tamanosError) throw tamanosError;
                 setTamanos(tamanosData || []);
             } catch (err) {
-                console.error('Error al cargar datos:', err);
+                console.error('Error al cargar datos de los dropdowns:', err);
             }
         };
+
         fetchData();
     }, []);
 
+    // Cargar razas cuando cambie la especie seleccionada
     useEffect(() => {
         const fetchRazas = async () => {
             try {
                 if (!selectedEspecieId) {
                     setRazas([]);
-                    setRazaId(null);
                     return;
                 }
+
                 const { data: razasData, error: razasError } = await supabase
                     .from('razas')
                     .select('*')
@@ -167,18 +158,22 @@ export default function Rapido() {
                 console.error('Error al cargar razas:', err);
             }
         };
+
         fetchRazas();
     }, [selectedEspecieId]);
 
+    // Solicitar permisos de ubicación y obtener la ubicación actual
     useEffect(() => {
         (async () => {
             const { status } = await Location.requestForegroundPermissionsAsync();
             if (status !== 'granted') {
-                console.log('Permiso de ubicación denegado.');
+                console.log('Permiso de ubicación denegado. Usando ubicación predeterminada.');
                 return;
             }
+
             const userLocation = await Location.getCurrentPositionAsync({});
             const { latitude, longitude } = userLocation.coords;
+
             setCoordinates({ lat: latitude, lng: longitude });
             setInitialRegion({
                 latitude,
@@ -196,7 +191,7 @@ export default function Rapido() {
             return;
         }
         const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            mediaTypes: ['images'],
             allowsEditing: true,
             quality: 1,
         });
@@ -205,33 +200,38 @@ export default function Rapido() {
         }
     };
 
-    const uploadImage = async (): Promise<string | null> => {
+    const uploadImage = async () => {
         if (!imageUri) return null;
         try {
             setUploading(true);
             const imageName = `image-${Date.now()}.jpg`;
+
             const fileInfo = await FileSystem.getInfoAsync(imageUri);
             if (!fileInfo.exists) {
                 console.error('El archivo no existe');
                 return null;
             }
+
             const file = {
                 uri: imageUri,
                 name: imageName,
-                type: 'image/jpeg' as const,
+                type: 'image/jpeg',
             };
-            const { error } = await supabase.storage
+
+            const { data, error } = await supabase.storage
                 .from('images')
                 .upload(imageName, file, {
                     contentType: 'image/jpeg',
                     upsert: false,
                 });
+
             if (error) {
                 console.error('Error al subir imagen:', error.message);
                 return null;
             }
-            const { data } = supabase.storage.from('images').getPublicUrl(imageName);
-            return data.publicUrl;
+
+            const publicUrl = supabase.storage.from('images').getPublicUrl(imageName).data.publicUrl;
+            return publicUrl;
         } catch (err) {
             console.error('Error en uploadImage:', err);
             return null;
@@ -243,55 +243,60 @@ export default function Rapido() {
     const handleReport = async () => {
         const imageUrl = await uploadImage();
         if (!imageUrl) {
-            alert('Error al subir la imagen.');
+            alert('Error al subir la imagen. Inténtalo nuevamente.');
             return;
         }
         if (!coordinates) {
             alert('Por favor selecciona una ubicación en el mapa.');
             return;
         }
-        if (!especieId || !razaId || !colorId || !tamanoId) {
+        if (!especie || !raza || !color || !tamano) {
             alert('Por favor completa todos los campos de selección.');
             return;
         }
+
         const { error } = await supabase
             .from('reportes_encontrados')
-            .insert({
-                punto_referencia: reference,
-                telefono: phone,
-                image_url: imageUrl,
-                ubicacion: coordinates,
-                especie_id: especieId,
-                raza_id: razaId,
-                color_id: colorId,
-                tamano_id: tamanoId,
-            });
+            .insert([
+                {
+                    punto_referencia: reference,
+                    telefono: phone,
+                    image_url: imageUrl,
+                    ubicacion: { lat: coordinates.lat, lng: coordinates.lng },
+                    especie_id: especie,  // Puedes ajustar para enviar el ID en vez del nombre si es necesario
+                    raza_id: raza,
+                    color_id: color,
+                    tamano_id: tamano,
+                },
+            ]);
+
         if (error) {
             console.error('Error al guardar el reporte:', error.message);
             alert('Hubo un problema al guardar el reporte.');
         } else {
             alert('Reporte guardado exitosamente.');
+            setLocation('');
             setReference('');
             setPhone('');
             setImageUri(null);
             setCoordinates(null);
-            setEspecieId(null);
-            setRazaId(null);
-            setColorId(null);
-            setTamanoId(null);
+            setEspecie(null);
+            setRaza(null);
+            setColor(null);
+            setTamano(null);
             setSelectedEspecieId(null);
         }
     };
 
-    const handleMapPress = (e: any) => {
+    const handleMapPress = (e) => {
         const { latitude, longitude } = e.nativeEvent.coordinate;
         setCoordinates({ lat: latitude, lng: longitude });
     };
 
     return (
-        <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 50 }}>
+        <ScrollView style={{ flex: 1 }}>
             <SafeAreaView style={styles.safeArea}>
-                <StatusBar barStyle="dark-content" backgroundColor="#FFF" />
+                <StatusBar barStyle="dark-content" backgroundColor="#FFF" translucent={false} />
                 <View style={styles.container}>
                     <View style={styles.imageSection}>
                         <View style={styles.textContainer}>
@@ -328,6 +333,7 @@ export default function Rapido() {
                             <Text style={styles.mapPlaceholderText}>Selecciona una ubicación...</Text>
                         )}
                     </View>
+
                     <Text style={styles.label}>Añade un punto de referencia</Text>
                     <TextInput
                         style={styles.input}
@@ -335,6 +341,7 @@ export default function Rapido() {
                         value={reference}
                         onChangeText={setReference}
                     />
+
                     <Text style={styles.label}>Comparte un número para contactarte</Text>
                     <TextInput
                         style={styles.input}
@@ -343,39 +350,62 @@ export default function Rapido() {
                         value={phone}
                         onChangeText={setPhone}
                     />
+
+                    {/* Campo: Especie */}
                     <Text style={styles.label}>Especie de la mascota que encontraste</Text>
                     <SearchableDropdown
                         data={especies}
-                        value={especieId}
+                        value={especie}
                         placeholder="Selecciona una especie..."
-                        onSelect={(id) => {
-                            setEspecieId(id);
-                            setSelectedEspecieId(id);
-                            setRazaId(null);
+                        onSelect={(item) => {
+                            setEspecie(item);
+                            setEspecie(item.id);
+                            setSelectedEspecieId(item);
+                            setSelectedEspecieId(item.id);
+                            setRaza(null); // Reseteamos la raza al cambiar la especie
                         }}
                     />
+
+                    {/* Campo: Raza */}
                     <Text style={styles.label}>Raza de la mascota que encontraste</Text>
                     <SearchableDropdown
                         data={razas}
-                        value={razaId}
+                        value={raza}
                         placeholder="Selecciona una raza..."
-                        onSelect={(id) => setRazaId(id)}
+                        onSelect={(item) => {
+                            setRaza(item);
+                            setRaza(item.id);
+
+                        }}
                         disabled={!selectedEspecieId}
                     />
+
+                    {/* Campo: Color */}
                     <Text style={styles.label}>Color de la mascota que encontraste</Text>
                     <SearchableDropdown
                         data={colores}
-                        value={colorId}
+                        value={color}
                         placeholder="Selecciona un color..."
-                        onSelect={(id) => setColorId(id)}
+                        onSelect={(item) => {
+                            setColor(item);
+                            setColor(item.id);
+
+                        }}
                     />
+
+                    {/* Campo: Tamaño */}
                     <Text style={styles.label}>Tamaño de la mascota que encontraste</Text>
                     <SearchableDropdown
                         data={tamanos}
-                        value={tamanoId}
+                        value={tamano}
                         placeholder="Selecciona un tamaño..."
-                        onSelect={(id) => setTamanoId(id)}
+                        onSelect={(item) => {
+                            setTamano(item);
+                            setTamano(item.id);
+
+                        }}
                     />
+
                     <TouchableOpacity
                         style={styles.button}
                         onPress={handleReport}
@@ -394,26 +424,16 @@ export default function Rapido() {
 }
 
 const styles = StyleSheet.create({
-    safeArea: {
-        flex: 1,
-        backgroundColor: '#FFF',
-    },
     container: {
         flex: 1,
         backgroundColor: '#FFF',
         paddingHorizontal: 20,
         paddingTop: 40,
     },
-    title: { fontSize: 16, fontWeight: 'bold', marginBottom: 15 },
-    imageSection: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: 20,
-    },
-    textContainer: {
-        flex: 1,
-        paddingRight: 10,
+    title: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginBottom: 15,
     },
     imageContainer: {
         width: 120,
@@ -424,9 +444,21 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: '#F5F5F5',
     },
-    imageText: { marginTop: 5, fontSize: 14, color: '#777' },
-    previewImage: { width: '100%', height: '100%', resizeMode: 'cover' },
-    label: { fontSize: 14, fontWeight: 'bold', marginBottom: 5 },
+    imageText: {
+        marginTop: 5,
+        fontSize: 14,
+        color: '#777',
+    },
+    previewImage: {
+        width: '100%',
+        height: '100%',
+        resizeMode: 'cover',
+    },
+    label: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        marginBottom: 5,
+    },
     input: {
         borderWidth: 1,
         borderColor: '#ccc',
@@ -442,7 +474,11 @@ const styles = StyleSheet.create({
         marginTop: 20,
         marginBottom: 50,
     },
-    buttonText: { color: '#FFF', fontWeight: 'bold', fontSize: 16 },
+    buttonText: {
+        color: '#FFF',
+        fontWeight: 'bold',
+        fontSize: 16,
+    },
     mapContainer: {
         width: '100%',
         height: 200,
@@ -453,7 +489,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: '#F5F5F5',
         position: 'relative',
-        overflow: 'visible',
     },
     map: {
         ...StyleSheet.absoluteFillObject,
@@ -463,22 +498,29 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#777',
     },
+    safeArea: {
+        flex: 1,
+        backgroundColor: '#FFF',
+    },
+    imageSection: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 20,
+    },
+    textContainer: {
+        flex: 1,
+        paddingRight: 10,
+    },
+    // Estilos para el dropdown
     dropdownContainer: {
         marginBottom: 15,
-        position: 'relative',
-        zIndex: 1000,
     },
-    dropdownList: {
-        position: 'absolute',
-        top: 45,
-        left: 0,
-        right: 0,
-        backgroundColor: '#FFF',
+    dropdown: {
+
         borderWidth: 1,
         borderColor: '#ccc',
-        maxHeight: 150,
-        zIndex: 1000,
-        elevation: 1000,
+        backgroundColor: '#FFF',
     },
     dropdownItem: {
         padding: 10,
@@ -487,6 +529,7 @@ const styles = StyleSheet.create({
     },
 });
 
+// Estilos personalizados para el input del dropdown (se reutilizan en SearchableDropdown)
 const pickerSelectStyles = StyleSheet.create({
     inputIOS: {
         borderWidth: 1,
@@ -507,5 +550,8 @@ const pickerSelectStyles = StyleSheet.create({
         fontSize: 14,
         color: '#000',
         backgroundColor: '#FFF',
+    },
+    placeholder: {
+        color: '#777',
     },
 });
