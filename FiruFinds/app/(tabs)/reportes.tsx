@@ -13,7 +13,7 @@ export default function Reportes() {
                 <Text style={styles.description}>
                     Perdí a mi mascota y quiero buscarla
                 </Text>
-                <TouchableOpacity style={styles.button} onPress={() => router.push('/perdidos')}>
+                <TouchableOpacity style={styles.button} onPress={() => router.push('../perdidos')}>
                     <Text style={styles.buttonText}>Perdido</Text>
                 </TouchableOpacity>
             </View>
@@ -22,7 +22,7 @@ export default function Reportes() {
                 <Text style={styles.description}>
                     Encontré a una mascota y quiero ayudarla a volver a casa
                 </Text>
-                <TouchableOpacity style={styles.button} onPress={() => router.push('/encontrados')}>
+                <TouchableOpacity style={styles.button} onPress={() => router.push('../encontrados')}>
                     <Text style={styles.buttonText}>Encontrado</Text>
                 </TouchableOpacity>
             </View>
@@ -39,10 +39,12 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-start',
     },
     headerTitle: {
+        marginTop: -10,
+        marginBottom: 200,
+        textAlign: 'center',
         fontSize: 24,
         fontWeight: 'bold',
-        marginBottom: 200,
-        marginTop: 15,
+        color: '#000',
     },
     section: {
         width: '100%',
@@ -53,6 +55,8 @@ const styles = StyleSheet.create({
         fontSize: 16,
         marginBottom: 20,
         textAlign: 'center',
+        fontWeight: 'bold',
+
     },
     button: {
         backgroundColor: '#F4A83D',

@@ -16,7 +16,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../lib/supabase';
 import { useRouter } from 'expo-router';
 
 

@@ -15,7 +15,7 @@ export default function Agradecimiento() {
         <View style={styles.container}>
             <Image source={require('@/assets/images/agradecimiento.png')} style={styles.image} />
             <Text style={styles.message}>{mensaje}</Text>
-            <TouchableOpacity onPress={() => router.push("/home")}>
+            <TouchableOpacity onPress={() => router.push("/(tabs)/home")}>
                 <Text style={styles.volver}>Volver al inicio</Text>
             </TouchableOpacity>
         </View>
