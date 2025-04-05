@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, Dimensions, Image, Modal, TouchableOpacity } fr
 import MapView, { Marker } from 'react-native-maps';
 import { supabase } from '../../lib/supabase'; // Ajusta la ruta según tu estructura
 import { Ionicons } from '@expo/vector-icons'; // Icono de información
+import { useRouter } from 'expo-router';
+
 
 
 export default function Mapas() {
@@ -22,6 +24,8 @@ export default function Mapas() {
         latitudeDelta: 0.05,
         longitudeDelta: 0.05,
     });
+
+    const router = useRouter();
 
     // Cargar datos de reportes perdidos y encontrados
     useEffect(() => {
@@ -88,7 +92,7 @@ export default function Mapas() {
                             key={`found-${report.id}`}
                             coordinate={{ latitude: lat, longitude: lng }}
                             pinColor="#F4A83D"
-                            onPress={() => setSelectedReport({ ...report, tipo: 'encontrado' })}
+                            onPress={() => setSelectedReport({ ...report, tipo: 'found' })}
                         />
                     );
                 })}
@@ -102,7 +106,7 @@ export default function Mapas() {
                             key={`lost-${report.id}`}
                             coordinate={{ latitude: lat, longitude: lng }}
                             pinColor="#30404d"
-                            onPress={() => setSelectedReport({ ...report, tipo: 'perdido' })}
+                            onPress={() => setSelectedReport({ ...report, tipo: 'lost' })}
                         />
                     );
                 })}
@@ -120,12 +124,12 @@ export default function Mapas() {
                         <View style={styles.modalContainer}>
                             {/* Mostrar la raza en vez del nombre en reportes encontrados */}
                             <Text style={styles.modalTitle}>
-                                {selectedReport.tipo === 'encontrado'
+                                {selectedReport.tipo === 'found'
                                     ? selectedReport.raza?.nombre || 'Sin raza'
                                     : selectedReport.nombre || 'Sin nombre'}
                             </Text>
                             <Text style={styles.modalDescription}>
-                                {selectedReport.tipo === 'encontrado'
+                                {selectedReport.tipo === 'found'
                                     ? 'Mascota encontrada'
                                     : 'Mascota perdida'}
                             </Text>
@@ -139,6 +143,22 @@ export default function Mapas() {
                             )}
                             <TouchableOpacity style={styles.closeButton} onPress={closeModal}>
                                 <Text style={styles.closeButtonText}>Cerrar</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[styles.closeButton]}
+                                onPress={() => {
+                                    router.push({
+                                        pathname: '/detalles',
+                                        params: {
+                                            id: selectedReport.id,
+                                            type: selectedReport.tipo,
+                                            from: 'mapas'
+                                        }
+                                    });
+                                    setSelectedReport(null); // Cierra el modal
+                                }}
+                            >
+                                <Text style={styles.closeButtonText}>Ver más</Text>
                             </TouchableOpacity>
                         </View>
                     </TouchableOpacity>
