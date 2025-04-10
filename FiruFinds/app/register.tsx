@@ -32,7 +32,7 @@ export default function RegisterScreen() {
         if (user) {
             // Insertar datos en la tabla profiles
             const { error: profileError } = await supabase
-                .from('profiles')
+                .from('usuarios')
                 .insert([
                     {
                         id: user.id, // El ID del usuario en auth.users

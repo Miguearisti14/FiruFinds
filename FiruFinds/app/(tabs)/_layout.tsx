@@ -41,13 +41,13 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="reportes"
         options={{
           tabBarIcon: ({ color }) => <MaterialCommunityIcons name="clipboard-text" size={28} color={color} />
         }}
       />
       <Tabs.Screen
-        name="index"
+        name="mapas"
         options={{
           tabBarIcon: ({ color }) => <MaterialCommunityIcons size={28} name="map-marker" color={color} />,
         }}

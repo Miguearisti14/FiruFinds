@@ -24,7 +24,6 @@ export default function LandingScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: '#fff',
         paddingHorizontal: 20,
@@ -32,13 +31,15 @@ const styles = StyleSheet.create({
     logo: {
         width: 120,
         height: 120,
-        marginBottom: 20,
+        marginBottom: '20%',
+        borderRadius: 100
     },
     title: {
-        fontSize: 36,
+        fontSize: 42,
         fontWeight: 'bold',
         color: '#4a3b2f', // Marrón oscuro similar al de la imagen
         marginBottom: 40,
+        marginTop: '50%'
     },
     button: {
         backgroundColor: '#f9a826',
