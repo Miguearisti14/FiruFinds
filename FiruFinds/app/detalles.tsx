@@ -58,11 +58,41 @@ export default function ReportDetail() {
                 source={{ uri: pet.image_url }}
                 style={styles.image}
             />
+
+            <Text style={styles.field}><Text style={{ fontWeight: 'bold' }}>Especie: </Text>{pet.especies?.nombre}</Text>
+            <Text style={styles.field}><Text style={{ fontWeight: 'bold' }}>Raza: </Text>{pet.razas?.nombre}</Text>
+            <Text style={styles.field}><Text style={{ fontWeight: 'bold' }}>Tamaño: </Text>{pet.tamanos?.nombre}</Text>
+            <Text style={styles.field}><Text style={{ fontWeight: 'bold' }}>Color: </Text>{pet.colores?.nombre}</Text>
+
+            {pet.estado_de_salud && (
+                <Text style={styles.field}>
+                    <Text style={{ fontWeight: 'bold' }}>Salud: </Text>
+                    {pet.estado_de_salud}
+                </Text>
+            )}
+            {type === 'lost' && (
+                <Text style={styles.field}>
+                    <Text style={{ fontWeight: 'bold' }}>Recompensa: </Text>
+                    {pet.valor_recompensa}
+                </Text>
+            )}
+            {phoneToShow && (
+                <Text style={styles.field}>
+                    <Text style={{ fontWeight: 'bold' }}>Teléfono: </Text>
+                    {phoneToShow}
+                </Text>
+            )}
+
+
+
             {pet.ubicacion && (
                 <View style={styles.mapContainer}>
-                    <Text style={styles.field}>Ubicación:</Text>
+                    <Text style={styles.field}>
+                        <Text style={{ fontWeight: 'bold' }}>Ubicación: </Text>
+                        {pet.punto_referencia}
+                    </Text>
                     <MapView
-                        style={{ width: '100%', height: 200, marginVertical: 20 }}
+                        style={styles.map}
                         initialRegion={{
                             latitude: pet.ubicacion.lat,
                             longitude: pet.ubicacion.lng,
@@ -83,25 +113,7 @@ export default function ReportDetail() {
 
             )}
 
-            {pet.punto_referencia && (
-                <Text>Punto referencia: {pet.punto_referencia}</Text>
-            )}
 
-            {type === 'lost' && (
-                <Text>Recompensa: {pet.valor_recompensa}</Text>
-            )}
-
-            {pet.estado_de_salud && (
-                <Text>Salud: {pet.estado_de_salud}</Text>
-            )}
-            {phoneToShow && (
-                <Text>Teléfono: {phoneToShow}</Text>
-            )}
-
-            <Text>Tamaño: {pet.tamaños?.nombre}</Text>
-            <Text>Especie: {pet.especies?.nombre}</Text>
-            <Text>Color: {pet.colores?.nombre}</Text>
-            <Text>Raza: {pet.razas?.nombre}</Text>
 
             <View >
 
@@ -124,42 +136,62 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+        backgroundColor: '#fff'
     },
     container: {
         padding: 20,
         backgroundColor: '#FFF',
     },
     image: {
-        width: '100%',
+        width: '80%',
         height: 200,
-        borderRadius: 8,
+        borderRadius: 16,
         marginBottom: 20,
+        resizeMode: 'cover',
+        alignSelf: 'center'
     },
     title: {
-        fontSize: 24,
-        fontWeight: 'bold',
+        fontSize: 30,
+        fontWeight: '700',
         marginBottom: 10,
+        textAlign: 'center',
+        color: '#333',
+        marginTop: 20
     },
     field: {
-        marginVertical: 4,
-        fontSize: 16
+        fontSize: 16,
+        color: '#444',
+        marginBottom: 6,
+        position: 'fixed',
+        left: 45,
+        textAlign: 'justify'
     },
     mapContainer: {
-        width: '100%',
-        height: 250,
-        marginVertical: 20
+        marginVertical: 20,
+        borderRadius: 20,
+        overflow: 'hidden',
+    },
+    map: {
+        width: '80%',
+        height: 200,
+        alignSelf: 'center'
+    },
+    buttonContainer: {
+        alignItems: 'center',
+        marginTop: 30,
     },
     button: {
         backgroundColor: '#F4A83D',
-        borderRadius: 8,
-        paddingVertical: 12,
+        borderRadius: 10,
+        paddingVertical: 14,
+        paddingHorizontal: 40,
         width: '100%',
-        marginTop: 20,
-        maxWidth: '95%'
+        maxWidth: 300,
+        alignSelf: 'center',
     },
     buttonText: {
         fontSize: 16,
-        fontWeight: 'bold',
+        fontWeight: '600',
         color: '#FFF',
         textAlign: 'center',
     },

@@ -83,7 +83,7 @@ export default function Mapas() {
             )}
 
             <MapView style={styles.map} initialRegion={region}>
-                {/* Marcadores para reportes ENCONTRADOS (color verde) */}
+                {/* Marcadores para reportes ENCONTRADOS */}
                 {foundPets.map((report) => {
                     if (!report.ubicacion) return null;
                     const { lat, lng } = report.ubicacion;
@@ -97,7 +97,7 @@ export default function Mapas() {
                     );
                 })}
 
-                {/* Marcadores para reportes PERDIDOS (color rojo) */}
+                {/* Marcadores para reportes PERDIDOS  */}
                 {lostPets.map((report) => {
                     if (!report.ubicacion) return null;
                     const { lat, lng } = report.ubicacion;
