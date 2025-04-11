@@ -1,73 +1,57 @@
 import React, { useState, useEffect } from 'react';
-import {
-    SafeAreaView,
-    StatusBar,
-    View,
-    Text,
-    FlatList,
-    Image,
-    StyleSheet,
-    TouchableOpacity,
-} from 'react-native';
+import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { supabase } from '../../lib/supabase';  // ajusta la ruta si tu lib está en otra carpeta
+import { supabase } from '../lib/supabase';
+import { Ionicons } from '@expo/vector-icons';
 
 const Tab = createMaterialTopTabNavigator();
 
-const PetCard = ({
-    title,
-    image,
-}: {
-    title: string;
-    image: string;
-}) => (
+// Reutiliza el componente PetCard para mostrar cada reporte
+const PetCard = ({ title, image }: { title: string; image: string }) => (
     <View style={styles.card}>
         <Image source={{ uri: image }} style={styles.cardImage} />
         <Text style={styles.cardTitle}>{title}</Text>
     </View>
 );
 
-function LostPetsScreen() {
-    const [lostPets, setLostPets] = useState<any[]>([]);
+function LostReportsScreen({ userId }: { userId: string }) {
+    const [lostReports, setLostReports] = useState<any[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
     const router = useRouter();
 
     useEffect(() => {
-        const fetchLostPets = async () => {
+        const fetchLostReports = async () => {
             const { data, error } = await supabase
                 .from('reportes_perdidos')
-                .select(`
-          id,
-          nombre,
-          image_url,
-          razas(nombre)
-        `)
+                .select(`id, nombre, image_url, razas(nombre)`)
+                .eq('usuario_id', userId)
                 .limit(20);
-
             if (error) {
                 console.error(error);
             } else {
-                setLostPets(data || []);
+                setLostReports(data || []);
             }
+            setLoading(false);
         };
-        fetchLostPets();
-    }, []);
+        fetchLostReports();
+    }, [userId]);
+
+    if (loading) {
+        return <ActivityIndicator size="large" color="#0000ff" style={styles.loading} />;
+    }
 
     return (
+
         <FlatList
-            data={lostPets}
+            data={lostReports}
             numColumns={2}
             contentContainerStyle={styles.list}
             keyExtractor={(item) => item.id.toString()}
             renderItem={({ item }) => (
                 <TouchableOpacity
                     style={{ flex: 1, margin: 5 }}
-                    onPress={() =>
-                        router.push(
-                            `/detalles?type=lost&id=${item.id}`
-                        )
-                    }
+                    onPress={() => router.push(`/detalles?type=lost&id=${item.id}`)}
                 >
                     <PetCard
                         title={item.razas?.nombre || 'Raza desconocida'}
@@ -78,7 +62,7 @@ function LostPetsScreen() {
             ListEmptyComponent={
                 <View style={styles.placeholderContainer}>
                     <Text style={styles.placeholderText}>
-                        No se encontraron reportes.
+                        No se encontraron reportes perdidos.
                     </Text>
                 </View>
             }
@@ -86,45 +70,42 @@ function LostPetsScreen() {
     );
 }
 
-function FoundPetsScreen() {
-    const [foundPets, setFoundPets] = useState<any[]>([]);
+function FoundReportsScreen({ userId }: { userId: string }) {
+    const [foundReports, setFoundReports] = useState<any[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
     const router = useRouter();
 
     useEffect(() => {
-        const fetchFoundPets = async () => {
+        const fetchFoundReports = async () => {
             const { data, error } = await supabase
                 .from('reportes_encontrados')
-                .select(`
-          id,
-          nombre,
-          image_url,
-          razas(nombre)
-        `)
+                .select(`id, nombre, image_url, razas(nombre)`)
+                .eq('usuario_id', userId)
                 .limit(20);
-
             if (error) {
                 console.error(error);
             } else {
-                setFoundPets(data || []);
+                setFoundReports(data || []);
             }
+            setLoading(false);
         };
-        fetchFoundPets();
-    }, []);
+        fetchFoundReports();
+    }, [userId]);
+
+    if (loading) {
+        return <ActivityIndicator size="large" color="#0000ff" style={styles.loading} />;
+    }
 
     return (
         <FlatList
-            data={foundPets}
+            data={foundReports}
             numColumns={2}
             contentContainerStyle={styles.list}
             keyExtractor={(item) => item.id.toString()}
             renderItem={({ item }) => (
                 <TouchableOpacity
                     style={{ flex: 1, margin: 5 }}
-                    onPress={() =>
-                        router.push(
-                            `/detalles?type=found&id=${item.id}`
-                        )
-                    }
+                    onPress={() => router.push(`/detalles?type=found&id=${item.id}`)}
                 >
                     <PetCard
                         title={item.razas?.nombre || 'Raza desconocida'}
@@ -135,7 +116,7 @@ function FoundPetsScreen() {
             ListEmptyComponent={
                 <View style={styles.placeholderContainer}>
                     <Text style={styles.placeholderText}>
-                        No se encontraron reportes.
+                        No se encontraron reportes encontrados.
                     </Text>
                 </View>
             }
@@ -143,33 +124,41 @@ function FoundPetsScreen() {
     );
 }
 
-export default function Home() {
+export default function MisReportes() {
+    const [userId, setUserId] = useState<string | null>(null);
     const router = useRouter();
 
+    // Obtén el usuario logueado
+    useEffect(() => {
+        const getUser = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.user) {
+                setUserId(session.user.id);
+            } else {
+                // Si no hay sesión activa, redirige a la pantalla inicial
+                router.push('/');
+            }
+        };
+        getUser();
+    }, []);
+
+    if (!userId) {
+        return <ActivityIndicator size="large" color="#0000ff" style={styles.loading} />;
+    }
+
     return (
-        <SafeAreaView style={styles.safeArea}>
-            <StatusBar
-                barStyle="dark-content"
-                backgroundColor="#FFF"
-                translucent={false}
-            />
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => router.push('../perfil')}>
-                    <Ionicons
-                        name="person-circle-outline"
-                        size={30}
-                        color="#000"
-                    />
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>FiruFinds</Text>
-                <TouchableOpacity>
-                    <Ionicons
-                        name="notifications-outline"
-                        size={30}
-                        color="#000"
-                    />
-                </TouchableOpacity>
-            </View>
+        <View style={styles.container}>
+
+            <Text style={styles.title}>Mis Reportes</Text>
+
+            <TouchableOpacity
+                onPress={() => router.push('/perfil')}
+                style={styles.closeButtonContainer}
+            >
+                <Ionicons name="close" size={24} color="#333" />
+            </TouchableOpacity>
+
+
             <Tab.Navigator
                 screenOptions={{
                     tabBarActiveTintColor: '#F4A83D',
@@ -178,31 +167,42 @@ export default function Home() {
                     tabBarStyle: { backgroundColor: '#FFF' },
                 }}
             >
-                <Tab.Screen name="Perdidos" component={LostPetsScreen} />
-                <Tab.Screen name="Encontrados" component={FoundPetsScreen} />
+                <Tab.Screen name="Perdidos">
+                    {() => <LostReportsScreen userId={userId} />}
+                </Tab.Screen>
+                <Tab.Screen name="Encontrados">
+                    {() => <FoundReportsScreen userId={userId} />}
+                </Tab.Screen>
             </Tab.Navigator>
-        </SafeAreaView>
+
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
-
-    safeArea: {
+    container: {
         flex: 1,
         backgroundColor: '#FFF',
     },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: 20,
-        paddingVertical: 10,
-        backgroundColor: '#FFF',
-    },
-    headerTitle: {
+    title: {
+        marginTop: 25,
+        textAlign: 'center',
         fontSize: 24,
         fontWeight: 'bold',
         color: '#000',
+    },
+    closeButtonContainer: {
+        position: 'absolute',
+        top: 25,
+        right: 10,
+        zIndex: 1,
+    },
+    closeButton: {
+        fontSize: 24,
+        color: '#333',
+    },
+    loading: {
+        marginTop: 20,
     },
     list: {
         padding: 10,
@@ -235,5 +235,4 @@ const styles = StyleSheet.create({
         color: '#777',
         textAlign: 'center',
     },
-
 });
