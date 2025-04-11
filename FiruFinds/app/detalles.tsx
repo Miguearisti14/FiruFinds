@@ -15,7 +15,14 @@ import MapView, { Marker } from 'react-native-maps';
 
 
 export default function ReportDetail() {
-    const { type, id, from } = useLocalSearchParams<{ type: string; id: string, from?: string }>();
+    const { type, id, from, query, selectedCategory, selectedReportType } = useLocalSearchParams<{
+        type: string;
+        id: string;
+        from?: string;
+        query?: string;
+        selectedCategory?: 'raza' | 'especie' | 'tamano' | 'color' | 'nombre';
+        selectedReportType?: 'Perdidos' | 'Encontrados';
+    }>();
     const router = useRouter();
     const [pet, setPet] = useState<any>(null);
 
@@ -120,6 +127,15 @@ export default function ReportDetail() {
                 <TouchableOpacity style={styles.button} onPress={() => {
                     if (from === 'mapas') {
                         router.push('/mapas');
+                    } else if (from === 'buscar') {
+                        router.push({
+                            pathname: '/buscar',
+                            params: {
+                                query,
+                                selectedCategory,
+                                selectedReportType,
+                            }
+                        });
                     } else {
                         router.back();
                     }
