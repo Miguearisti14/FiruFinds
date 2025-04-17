@@ -1,15 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Alert, Modal } from 'react-native';
 import { supabase } from '../lib/supabase';
 import { useRouter } from 'expo-router';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import * as ImagePicker from 'expo-image-picker';
 
 export default function Perfil() {
     const [userId, setUserId] = useState<string | null>(null);
-    const [displayName, setDisplayName] = useState<string>('Usuario'); // Estado para el nombre del usuario
+    const [displayName, setDisplayName] = useState<string>('Usuario');
+    const [profileImage, setProfileImage] = useState<string>('https://via.placeholder.com/100');
+    const [modalVisible, setModalVisible] = useState<boolean>(false);
+    const [cacheBuster, setCacheBuster] = useState<number>(Date.now()); // For cache busting
     const router = useRouter();
 
-    // Paso 1: Obtener el ID del usuario logueado
     useEffect(() => {
         const getSession = async () => {
             const {
@@ -18,43 +21,153 @@ export default function Perfil() {
             if (session?.user) {
                 setUserId(session.user.id);
             } else {
-                router.push('/'); // Redirigir si no hay sesión
+                router.push('/');
             }
         };
         getSession();
     }, []);
 
-    // Paso 2: Consultar el display_name en la tabla usuarios
     useEffect(() => {
-        if (!userId) return; // No hacer nada si no hay userId
-        const fetchUserDisplayName = async () => {
+        if (!userId) return;
+        const fetchUserProfile = async () => {
             try {
                 const { data, error } = await supabase
                     .from('usuarios')
-                    .select('display_name')
+                    .select('display_name, avatar_url')
                     .eq('id', userId)
-                    .single(); // Usamos .single() porque esperamos un solo registro
+                    .single();
 
                 if (error) throw error;
                 if (data) {
-                    setDisplayName(data.display_name); // Actualizamos el estado con el nombre
+                    setDisplayName(data.display_name || 'Usuario');
+                    const newProfileImage = data.avatar_url || 'https://via.placeholder.com/100';
+                    setProfileImage(newProfileImage);
+                    console.log('Fetched profile image URL:', newProfileImage);
                 }
             } catch (error) {
-                console.error('Error al obtener el display_name:', error);
+                console.error('Error al obtener el perfil:', error);
             }
         };
-        fetchUserDisplayName();
+        fetchUserProfile();
     }, [userId]);
 
-    // Paso 3: Cerrar sesión (sin cambios)
     const handleLogout = async () => {
         await supabase.auth.signOut();
         router.push('/');
     };
 
+    const showImageOptions = () => {
+        Alert.alert(
+            'Opciones de imagen',
+            '',
+            [
+                {
+                    text: 'Eliminar imagen',
+                    onPress: handleDeleteImage,
+                    style: 'destructive',
+                },
+                {
+                    text: 'Ver imagen',
+                    onPress: handleViewImage,
+                },
+                {
+                    text: 'Cambiar imagen',
+                    onPress: handleChangeImage,
+                },
+                {
+                    text: 'Cancelar',
+                    style: 'cancel',
+                },
+            ],
+            { cancelable: true }
+        );
+    };
+
+    const handleDeleteImage = async () => {
+        if (!userId) return;
+
+        const { error: storageError } = await supabase.storage
+            .from('avatars')
+            .remove([`${userId}/profile.jpg`]);
+
+        if (storageError) {
+            console.error('Error al eliminar imagen del storage:', storageError);
+            Alert.alert('Error', 'No se pudo eliminar la imagen del almacenamiento.');
+            return;
+        }
+
+        const { error: dbError } = await supabase
+            .from('usuarios')
+            .update({ avatar_url: null })
+            .eq('id', userId);
+
+        if (dbError) {
+            console.error('Error al eliminar imagen de la base de datos:', dbError);
+            Alert.alert('Error', 'No se pudo actualizar el perfil.');
+        } else {
+            setProfileImage('https://via.placeholder.com/100');
+            setCacheBuster(Date.now()); // Update cache buster
+            Alert.alert('Éxito', 'Imagen eliminada correctamente.');
+        }
+    };
+
+    const handleViewImage = () => {
+        setModalVisible(true);
+    };
+
+    const handleChangeImage = async () => {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+            Alert.alert('Permiso denegado', 'Se necesitan permisos para acceder a la galería.');
+            return;
+        }
+
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 1,
+        });
+
+        if (!result.canceled && result.assets && result.assets.length > 0) {
+            const uri = result.assets[0].uri;
+            const fileName = `${userId}/profile.jpg`;
+
+            const { error } = await supabase.storage
+                .from('avatars')
+                .upload(fileName, {
+                    uri,
+                    type: 'image/jpeg',
+                }, {
+                    upsert: true
+                });
+
+            if (error) {
+                console.error('Error al subir imagen:', error);
+                Alert.alert('Error', 'No se pudo subir la imagen.');
+            } else {
+                const { data } = supabase.storage
+                    .from('avatars')
+                    .getPublicUrl(fileName);
+                const { error: updateError } = await supabase
+                    .from('usuarios')
+                    .update({ avatar_url: data.publicUrl })
+                    .eq('id', userId);
+                if (updateError) {
+                    console.error('Error al actualizar la URL de la imagen:', updateError);
+                    Alert.alert('Error', 'No se pudo actualizar el perfil.');
+                } else {
+                    setProfileImage(data.publicUrl);
+                    setCacheBuster(Date.now()); // Update cache buster to force image reload
+                    console.log('Updated profile image URL:', data.publicUrl);
+                    Alert.alert('Éxito', 'Imagen actualizada correctamente.');
+                }
+            }
+        }
+    };
+
     return (
         <View style={styles.container}>
-            {/* Encabezado con "FiruFinds" y botón "X" */}
             <View style={styles.header}>
                 <Text style={styles.appName}>FiruFinds</Text>
                 <TouchableOpacity onPress={() => router.push('/(tabs)/home')} style={styles.closeButton}>
@@ -62,18 +175,15 @@ export default function Perfil() {
                 </TouchableOpacity>
             </View>
 
-            {/* Imagen de perfil */}
-            <View style={styles.profileImageContainer}>
+            <TouchableOpacity onPress={showImageOptions} style={styles.profileImageContainer}>
                 <Image
-                    source={{ uri: 'https://via.placeholder.com/100' }} // Cambia por la URL real si la tienes
+                    source={{ uri: `${profileImage}?cb=${cacheBuster}` }}
                     style={styles.profileImage}
                 />
-            </View>
+            </TouchableOpacity>
 
-            {/* Título "Usuario" */}
             <Text style={styles.title}>{displayName}</Text>
 
-            {/* Elementos de navegación con íconos */}
             <TouchableOpacity style={styles.navItem}>
                 <Ionicons name="person-outline" size={20} color="#333" />
                 <Text style={styles.navItemText}>Mi perfil</Text>
@@ -89,16 +199,35 @@ export default function Perfil() {
                 <Text style={styles.navItemText}>Mis reportes</Text>
             </TouchableOpacity>
 
-            {/* Botón de "Cerrar Sesión" */}
             <TouchableOpacity
                 style={styles.linkButton}
-                onPress={async () => {
-                    await supabase.auth.signOut(); // Cierra la sesión real en Supabase
-                    router.replace('/Auth'); // Redirige a la pantalla de login o inicio
-                }}
+                onPress={handleLogout}
             >
                 <Text style={styles.linkText}>Cerrar Sesión</Text>
             </TouchableOpacity>
+
+            <Modal
+                animationType="fade"
+                transparent={true}
+                visible={modalVisible}
+                onRequestClose={() => setModalVisible(false)}
+            >
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalContent}>
+                        <TouchableOpacity
+                            style={styles.closeModalButton}
+                            onPress={() => setModalVisible(false)}
+                        >
+                            <Ionicons name="close" size={30} color="#fff" />
+                        </TouchableOpacity>
+                        <Image
+                            source={{ uri: `${profileImage}?cb=${cacheBuster}` }}
+                            style={styles.largeImage}
+                            resizeMode="contain"
+                        />
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 }
@@ -118,7 +247,7 @@ const styles = StyleSheet.create({
     },
     appName: {
         fontSize: 24,
-        color: '#8B7355', // Color marrón claro ajustado según la imagen
+        color: '#8B7355',
         fontWeight: 'bold',
     },
     closeButton: {
@@ -133,8 +262,8 @@ const styles = StyleSheet.create({
     profileImage: {
         width: 100,
         height: 100,
-        borderRadius: 50, // Hace la imagen circular
-        backgroundColor: '#ccc', // Placeholder gris
+        borderRadius: 50,
+        backgroundColor: '#ccc',
     },
     title: {
         fontSize: 24,
@@ -153,18 +282,6 @@ const styles = StyleSheet.create({
         fontSize: 16,
         marginLeft: 10,
     },
-    logoutButton: {
-        backgroundColor: '#F4A83D', // Fondo naranja
-        padding: 12,
-        borderRadius: 4,
-        alignItems: 'center',
-        marginTop: 30,
-    },
-    logoutButtonText: {
-        color: '#fff', // Texto blanco
-        fontWeight: 'bold',
-        fontSize: 16,
-    },
     linkButton: {
         marginTop: 250,
         alignItems: 'center',
@@ -174,6 +291,28 @@ const styles = StyleSheet.create({
         fontSize: 16,
         textDecorationLine: 'underline',
         fontWeight: '500',
+    },
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'center',
         alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    },
+    modalContent: {
+        width: '90%',
+        height: '70%',
+        justifyContent: 'center',
+        alignItems: 'center',
+        position: 'relative',
+    },
+    largeImage: {
+        width: '100%',
+        height: '100%',
+    },
+    closeModalButton: {
+        position: 'absolute',
+        top: 10,
+        right: 10,
+        zIndex: 1,
     },
 });
