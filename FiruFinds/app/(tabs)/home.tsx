@@ -1,4 +1,3 @@
-// app/home.tsx
 import React, { useState, useEffect } from 'react';
 import {
     SafeAreaView,
@@ -9,11 +8,13 @@ import {
     Image,
     StyleSheet,
     TouchableOpacity,
+    BackHandler,
+    Alert
 } from 'react-native';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { supabase } from '../../lib/supabase';  // ajusta la ruta si tu lib está en otra carpeta
+import { useRouter, useFocusEffect } from 'expo-router';
+import { supabase } from '../../lib/supabase';
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -29,7 +30,7 @@ const PetCard = ({
         <Text style={styles.cardTitle}>{title}</Text>
     </View>
 );
-
+// Pantalla de animales perdidos
 function LostPetsScreen() {
     const [lostPets, setLostPets] = useState<any[]>([]);
     const router = useRouter();
@@ -59,7 +60,8 @@ function LostPetsScreen() {
         <FlatList
             data={lostPets}
             numColumns={2}
-            contentContainerStyle={styles.list}
+            contentContainerStyle={[styles.list, { backgroundColor: '#FFF' }]}
+            style={{ backgroundColor: '#FFF' }}
             keyExtractor={(item) => item.id.toString()}
             renderItem={({ item }) => (
                 <TouchableOpacity
@@ -86,7 +88,7 @@ function LostPetsScreen() {
         />
     );
 }
-
+// Pantalla de animales encontrados
 function FoundPetsScreen() {
     const [foundPets, setFoundPets] = useState<any[]>([]);
     const router = useRouter();
@@ -116,7 +118,8 @@ function FoundPetsScreen() {
         <FlatList
             data={foundPets}
             numColumns={2}
-            contentContainerStyle={styles.list}
+            contentContainerStyle={[styles.list, { backgroundColor: '#FFF' }]}
+            style={{ backgroundColor: '#FFF' }}
             keyExtractor={(item) => item.id.toString()}
             renderItem={({ item }) => (
                 <TouchableOpacity
@@ -145,6 +148,32 @@ function FoundPetsScreen() {
 }
 
 export default function Home() {
+    const router = useRouter();
+
+    // Salir de la app con el botón atrás del celular
+    useFocusEffect(
+        React.useCallback(() => {
+            const onBackPress = () => {
+
+                Alert.alert(
+                    '¿Salir de la app?',
+                    '¿Estás seguro de que deseas salir?',
+                    [
+                        { text: 'Cancelar', style: 'cancel' },
+                        { text: 'Salir', onPress: () => BackHandler.exitApp() },
+                    ],
+                    { cancelable: true }
+                )
+                return true
+            }
+
+            BackHandler.addEventListener('hardwareBackPress', onBackPress)
+
+            return () =>
+                BackHandler.removeEventListener('hardwareBackPress', onBackPress)
+        }, [])
+    )
+
     return (
         <SafeAreaView style={styles.safeArea}>
             <StatusBar
@@ -153,7 +182,7 @@ export default function Home() {
                 translucent={false}
             />
             <View style={styles.header}>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={() => router.push('../perfil')}>
                     <Ionicons
                         name="person-circle-outline"
                         size={30}
@@ -188,7 +217,7 @@ const styles = StyleSheet.create({
 
     safeArea: {
         flex: 1,
-        backgroundColor: '#FFF',
+        backgroundColor: '#FFFFFF'
     },
     header: {
         flexDirection: 'row',

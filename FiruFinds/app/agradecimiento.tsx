@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 
+// Pantalla de agradecimiento en los reportes sin autenticación
 export default function Agradecimiento() {
     const router = useRouter();
 

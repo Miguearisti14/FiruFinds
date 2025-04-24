@@ -19,7 +19,7 @@ export default function Auth() {
     const [loading, setLoading] = useState(false)
     const router = useRouter();
 
-
+    // Iniciar sesión
     async function signInWithEmail() {
         setLoading(true);
 

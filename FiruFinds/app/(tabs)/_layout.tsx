@@ -17,19 +17,18 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarShowLabel: false,
-        tabBarActiveTintColor: '#FFF', // Color blanco para los íconos activos
-        tabBarInactiveTintColor: 'gray', // Color gris para los íconos inactivos
+        tabBarActiveTintColor: '#FFF',
+        tabBarInactiveTintColor: 'gray',
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
           ios: {
-            // Use a transparent background on iOS to show the blur effect
             position: 'absolute',
-            backgroundColor: '#F4A83D', // Fondo naranja
+            backgroundColor: '#F4A83D',
           },
           default: {
-            backgroundColor: '#F4A83D', // Fondo naranja para otras plataformas
+            backgroundColor: '#F4A83D',
           },
         }),
       }}

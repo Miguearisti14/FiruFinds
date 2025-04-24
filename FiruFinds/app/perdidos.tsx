@@ -10,6 +10,7 @@ import {
     StatusBar,
     SafeAreaView,
     ScrollView,
+    BackHandler,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -17,7 +18,7 @@ import * as FileSystem from 'expo-file-system';
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { supabase } from '../lib/supabase';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 
 
 // Componente de autocompletado para dropdowns
@@ -111,7 +112,6 @@ export default function Perdido() {
     const [reward, setReward] = useState('0'); // valor de recompensa
     const router = useRouter();
 
-
     // Cargar datos de los dropdowns desde Supabase
     useEffect(() => {
         const fetchData = async () => {
@@ -163,7 +163,7 @@ export default function Perdido() {
         fetchRazas();
     }, [selectedEspecieId]);
 
-    // Obtener ubicación actual
+    // Obtener ubicación actual del usuario
     useEffect(() => {
         (async () => {
             const { status } = await Location.requestForegroundPermissionsAsync();
@@ -184,6 +184,7 @@ export default function Perdido() {
         })();
     }, []);
 
+    // Seleccionar imagen de galería
     const pickImage = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (status !== 'granted') {
@@ -200,6 +201,7 @@ export default function Perdido() {
         }
     };
 
+    // Subir imagen a Supabase Storage
     const uploadImage = async () => {
         if (!imageUri) return null;
         try {
@@ -236,6 +238,7 @@ export default function Perdido() {
         }
     };
 
+    // Función para enviar el reporte
     const handleReport = async (tipoReporte) => {
         // Verificar que se hayan completado los campos obligatorios
         if (!petName || !healthStatus) {
@@ -303,6 +306,7 @@ export default function Perdido() {
         }
     };
 
+    // Evento al presionar el mapa
     const handleMapPress = (e: any) => {
         const { latitude, longitude } = e.nativeEvent.coordinate;
         setCoordinates({ lat: latitude, lng: longitude });

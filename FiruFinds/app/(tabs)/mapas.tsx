@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Dimensions, Image, Modal, TouchableOpacity } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
-import { supabase } from '../../lib/supabase'; // Ajusta la ruta según tu estructura
-import { Ionicons } from '@expo/vector-icons'; // Icono de información
+import { supabase } from '../../lib/supabase';
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
 
@@ -76,7 +76,7 @@ export default function Mapas() {
                         <Text style={styles.legendText}>Mascota encontrada</Text>
                     </View>
                     <View style={styles.legendItem}>
-                        <View style={[styles.legendColor, { backgroundColor: '#30404d' }]} />
+                        <View style={[styles.legendColor, { backgroundColor: 'lightblue' }]} />
                         <Text style={styles.legendText}>Mascota perdida</Text>
                     </View>
                 </View>
@@ -105,9 +105,11 @@ export default function Mapas() {
                         <Marker
                             key={`lost-${report.id}`}
                             coordinate={{ latitude: lat, longitude: lng }}
-                            pinColor="#30404d"
+                            pinColor="lightblue"
                             onPress={() => setSelectedReport({ ...report, tipo: 'lost' })}
+
                         />
+
                     );
                 })}
             </MapView>
@@ -133,7 +135,6 @@ export default function Mapas() {
                                     ? 'Mascota encontrada'
                                     : 'Mascota perdida'}
                             </Text>
-                            {/* Suponiendo que existe un campo image con la URL de la imagen */}
                             {selectedReport.image_url && (
                                 <Image
                                     source={{ uri: selectedReport.image_url }}
