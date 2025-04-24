@@ -10,6 +10,8 @@ import {
     StatusBar,
     SafeAreaView,
     ScrollView,
+    Alert,
+    BackHandler,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -17,8 +19,7 @@ import * as FileSystem from 'expo-file-system';
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { supabase } from '../lib/supabase';
-import { useRouter } from 'expo-router';
-
+import { useFocusEffect, useRouter } from 'expo-router';
 
 // Componente de autocompletado para dropdowns
 const SearchableDropdown = ({ data, value, onSelect, placeholder, disabled }) => {
@@ -82,7 +83,7 @@ const SearchableDropdown = ({ data, value, onSelect, placeholder, disabled }) =>
 };
 
 export default function Perdido() {
-    // Estados para campos generales
+    // Estados generales del formulario
     const [reference, setReference] = useState('');
     const [uploading, setUploading] = useState(false);
     const [imageUri, setImageUri] = useState<string | null>(null);
@@ -106,10 +107,9 @@ export default function Perdido() {
     const [selectedEspecieId, setSelectedEspecieId] = useState<number | null>(null);
 
     // Estados para los campos nuevos en reportes perdidos
-    const [petName, setPetName] = useState(''); // nombre de la mascota
-    const [healthStatus, setHealthStatus] = useState(''); // estado de salud
+    const [petName, setPetName] = useState('');
+    const [healthStatus, setHealthStatus] = useState('');
     const router = useRouter();
-
 
     // Cargar datos de los dropdowns desde Supabase
     useEffect(() => {
@@ -162,7 +162,7 @@ export default function Perdido() {
         fetchRazas();
     }, [selectedEspecieId]);
 
-    // Obtener ubicación actual
+    // Obtener ubicación actual del usuario
     useEffect(() => {
         (async () => {
             const { status } = await Location.requestForegroundPermissionsAsync();
@@ -183,6 +183,7 @@ export default function Perdido() {
         })();
     }, []);
 
+    // Seleccionar imagen de galería
     const pickImage = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (status !== 'granted') {
@@ -199,6 +200,7 @@ export default function Perdido() {
         }
     };
 
+    // Subir imagen a Supabase Storage
     const uploadImage = async () => {
         if (!imageUri) return null;
         try {
@@ -235,6 +237,7 @@ export default function Perdido() {
         }
     };
 
+    // Función para enviar el reporte
     const handleReport = async (tipoReporte) => {
         // Verificar que se hayan completado los campos obligatorios
         if (!coordinates) {
@@ -296,6 +299,7 @@ export default function Perdido() {
         }
     };
 
+    // Evento al presionar el mapa
     const handleMapPress = (e: any) => {
         const { latitude, longitude } = e.nativeEvent.coordinate;
         setCoordinates({ lat: latitude, lng: longitude });

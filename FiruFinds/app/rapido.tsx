@@ -186,6 +186,7 @@ export default function Rapido() {
         })();
     }, []);
 
+    // Seleccionar imagen de galería
     const pickImage = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (status !== 'granted') {
@@ -202,6 +203,7 @@ export default function Rapido() {
         }
     };
 
+    // Subir imagen a Supabase Storage
     const uploadImage = async () => {
         if (!imageUri) return null;
         try {
@@ -242,8 +244,15 @@ export default function Rapido() {
         }
     };
 
+    // Función para enviar el reporte
     const handleReport = async () => {
         const imageUrl = await uploadImage();
+
+        if (!phone.trim()) {
+            alert('Por favor ingresa un número de teléfono.');
+            return;
+        }
+
         if (!imageUrl) {
             alert('Error al subir la imagen. Inténtalo nuevamente.');
             return;
@@ -291,6 +300,7 @@ export default function Rapido() {
         }
     };
 
+    // Evento al presionar el mapa
     const handleMapPress = (e) => {
         const { latitude, longitude } = e.nativeEvent.coordinate;
         setCoordinates({ lat: latitude, lng: longitude });

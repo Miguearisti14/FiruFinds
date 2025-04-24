@@ -7,7 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 const Tab = createMaterialTopTabNavigator();
 
-// Reutiliza el componente PetCard para mostrar cada reporte
+// Componente reutilizable para mostrar una tarjeta de reporte
 const PetCard = ({ title, image }: { title: string; image: string }) => (
     <View style={styles.card}>
         <Image source={{ uri: image }} style={styles.cardImage} />
@@ -15,11 +15,13 @@ const PetCard = ({ title, image }: { title: string; image: string }) => (
     </View>
 );
 
+// Pantalla de reportes de mascotas perdidas del usuario
 function LostReportsScreen({ userId }: { userId: string }) {
     const [lostReports, setLostReports] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const router = useRouter();
 
+    // Carga los reportes de mascotas perdidas asociadas al usuario
     useEffect(() => {
         const fetchLostReports = async () => {
             const { data, error } = await supabase
@@ -70,11 +72,13 @@ function LostReportsScreen({ userId }: { userId: string }) {
     );
 }
 
+// Pantalla de reportes de mascotas encontradas del usuario
 function FoundReportsScreen({ userId }: { userId: string }) {
     const [foundReports, setFoundReports] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const router = useRouter();
 
+    // Carga los reportes de mascotas encontradas asociadas al usuario
     useEffect(() => {
         const fetchFoundReports = async () => {
             const { data, error } = await supabase
@@ -124,6 +128,7 @@ function FoundReportsScreen({ userId }: { userId: string }) {
     );
 }
 
+// Pantalla principal con pestañas "Perdidos" y "Encontrados"
 export default function MisReportes() {
     const [userId, setUserId] = useState<string | null>(null);
     const router = useRouter();

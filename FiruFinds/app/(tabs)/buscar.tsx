@@ -8,6 +8,7 @@ type Category = 'raza' | 'especie' | 'tamano' | 'color' | 'nombre';
 type ReportType = 'Perdidos' | 'Encontrados';
 
 const Buscar = () => {
+    //Constantes
     const params = useLocalSearchParams<{
         query?: string;
         selectedCategory?: Category;
@@ -28,6 +29,7 @@ const Buscar = () => {
 
     const router = useRouter();
 
+    //Categorias sugeridas para filtrar
     const fetchSuggestions = async (category: Category, text: string) => {
         if (!text) return [];
         let table = '';
@@ -72,6 +74,7 @@ const Buscar = () => {
         setSuggestions([]);
     };
 
+    // Selección de la tabla
     const getIdByNombre = async (category: Category, nombre: string) => {
         let table = '';
         switch (category) {
@@ -101,6 +104,7 @@ const Buscar = () => {
         return data[0].id;
     };
 
+    // Mostrar los reportes filtrados
     const fetchReportes = async () => {
         setLoadingResults(true);
         let dataReportes: any[] = [];
@@ -321,7 +325,7 @@ const styles = StyleSheet.create({
         fontSize: 16
     },
     title: {
-        marginTop: 11,
+        marginTop: -5,
         textAlign: 'center',
         fontSize: 24,
         fontWeight: 'bold',

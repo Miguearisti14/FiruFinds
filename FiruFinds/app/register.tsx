@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, StyleSheet, Text, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Input, Button } from '@rneui/themed';
-import { supabase } from '../lib/supabase'; // Asegúrate de tener Supabase configurado en `lib/supabase.js`
+import { supabase } from '../lib/supabase';
 
 export default function RegisterScreen() {
     const router = useRouter();
@@ -30,7 +30,7 @@ export default function RegisterScreen() {
         const user = data.user;
 
         if (user) {
-            // Insertar datos en la tabla profiles
+            // Insertar datos en la tabla usuarios
             const { error: profileError } = await supabase
                 .from('usuarios')
                 .insert([

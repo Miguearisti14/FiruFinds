@@ -10,9 +10,10 @@ export default function Perfil() {
     const [displayName, setDisplayName] = useState<string>('Usuario');
     const [profileImage, setProfileImage] = useState<string>('https://via.placeholder.com/100');
     const [modalVisible, setModalVisible] = useState<boolean>(false);
-    const [cacheBuster, setCacheBuster] = useState<number>(Date.now()); // For cache busting
+    const [cacheBuster, setCacheBuster] = useState<number>(Date.now());
     const router = useRouter();
 
+    // Obtener la sesión del usuario
     useEffect(() => {
         const getSession = async () => {
             const {
@@ -27,8 +28,9 @@ export default function Perfil() {
         getSession();
     }, []);
 
+    // Se consulta el perfil del usuario desde Supabase
     useEffect(() => {
-        if (!userId) return;
+        if (!userId) return
         const fetchUserProfile = async () => {
             try {
                 const { data, error } = await supabase
@@ -51,11 +53,13 @@ export default function Perfil() {
         fetchUserProfile();
     }, [userId]);
 
+    // Cierra la sesión del usuario
     const handleLogout = async () => {
         await supabase.auth.signOut();
         router.push('/');
     };
 
+    // Muestra opciones para gestionar la imagen de perfil
     const showImageOptions = () => {
         Alert.alert(
             'Opciones de imagen',
@@ -83,6 +87,7 @@ export default function Perfil() {
         );
     };
 
+    // Elimina la imagen de perfil del storage y de la base de datos
     const handleDeleteImage = async () => {
         if (!userId) return;
 
@@ -111,10 +116,12 @@ export default function Perfil() {
         }
     };
 
+    // Abre el modal para mostrar la imagen en grande
     const handleViewImage = () => {
         setModalVisible(true);
     };
 
+    // Cambia la imagen de perfil seleccionando una desde la galería
     const handleChangeImage = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (status !== 'granted') {
