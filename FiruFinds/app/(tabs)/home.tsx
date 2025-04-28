@@ -9,7 +9,8 @@ import {
     StyleSheet,
     TouchableOpacity,
     BackHandler,
-    Alert
+    Alert,
+    ImageBackground
 } from 'react-native';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { Ionicons } from '@expo/vector-icons';
@@ -57,35 +58,41 @@ function LostPetsScreen() {
     }, []);
 
     return (
-        <FlatList
-            data={lostPets}
-            numColumns={2}
-            contentContainerStyle={[styles.list, { backgroundColor: '#FFF' }]}
-            style={{ backgroundColor: '#FFF' }}
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={({ item }) => (
-                <TouchableOpacity
-                    style={{ flex: 1, margin: 5 }}
-                    onPress={() =>
-                        router.push(
-                            `/detalles?type=lost&id=${item.id}`
-                        )
-                    }
-                >
-                    <PetCard
-                        title={item.razas?.nombre || 'Raza desconocida'}
-                        image={item.image_url}
-                    />
-                </TouchableOpacity>
-            )}
-            ListEmptyComponent={
-                <View style={styles.placeholderContainer}>
-                    <Text style={styles.placeholderText}>
-                        No se encontraron reportes.
-                    </Text>
-                </View>
-            }
-        />
+        <ImageBackground
+            source={require('../../assets/images/fondo.png')}
+            style={styles.background}
+            resizeMode="cover" // 'cover', 'contain', 'stretch', etc.
+        >
+            <FlatList
+                data={lostPets}
+                numColumns={2}
+                contentContainerStyle={[styles.list, { backgroundColor: '#FFF' }]}
+                style={{ backgroundColor: '#FFF' }}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={({ item }) => (
+                    <TouchableOpacity
+                        style={{ flex: 1, margin: 5 }}
+                        onPress={() =>
+                            router.push(
+                                `/detalles?type=lost&id=${item.id}`
+                            )
+                        }
+                    >
+                        <PetCard
+                            title={item.razas?.nombre || 'Raza desconocida'}
+                            image={item.image_url}
+                        />
+                    </TouchableOpacity>
+                )}
+                ListEmptyComponent={
+                    <View style={styles.placeholderContainer}>
+                        <Text style={styles.placeholderText}>
+                            No se encontraron reportes.
+                        </Text>
+                    </View>
+                }
+            />
+        </ImageBackground>
     );
 }
 // Pantalla de animales encontrados
@@ -237,7 +244,7 @@ const styles = StyleSheet.create({
     },
     card: {
         flex: 1,
-        backgroundColor: '#F5F5F5',
+        backgroundColor: '#e5d6b6',
         borderRadius: 8,
         overflow: 'hidden',
     },
@@ -262,6 +269,9 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#777',
         textAlign: 'center',
+    },
+    background: {
+        flex: 1,
     },
 
 });

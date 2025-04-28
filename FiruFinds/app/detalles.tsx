@@ -9,6 +9,7 @@ import {
     Linking,
     Alert,
     Modal,
+    ImageBackground
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { supabase } from '../lib/supabase';
@@ -72,115 +73,121 @@ export default function ReportDetail() {
     };
 
     return (
-        <>
-            <ScrollView contentContainerStyle={styles.container}>
-                <Text style={styles.title}>{pet.nombre}</Text>
+        <ImageBackground
+            source={require('../assets/images/fondo.png')}
+            style={styles.background}
+            resizeMode="cover" // 'cover', 'contain', 'stretch', etc.
+        >
+            <>
+                <ScrollView contentContainerStyle={styles.container}>
+                    <Text style={styles.title}>{pet.nombre}</Text>
 
-                {/* Imagen clicable para ver en grande */}
-                <TouchableOpacity onPress={handleViewImage} activeOpacity={0.8}>
-                    <Image source={{ uri: pet.image_url }} style={styles.image} />
-                </TouchableOpacity>
-
-                {/* Detalles del reporte */}
-                <Text style={styles.field}>
-                    <Text style={{ fontWeight: 'bold' }}>Especie: </Text>
-                    {pet.especies?.nombre}
-                </Text>
-                <Text style={styles.field}>
-                    <Text style={{ fontWeight: 'bold' }}>Raza: </Text>
-                    {pet.razas?.nombre}
-                </Text>
-                <Text style={styles.field}>
-                    <Text style={{ fontWeight: 'bold' }}>Tamaño: </Text>
-                    {pet.tamanos?.nombre}
-                </Text>
-                <Text style={styles.field}>
-                    <Text style={{ fontWeight: 'bold' }}>Color: </Text>
-                    {pet.colores?.nombre}
-                </Text>
-
-                {pet.estado_de_salud && (
-                    <Text style={styles.field}>
-                        <Text style={{ fontWeight: 'bold' }}>Salud: </Text>
-                        {pet.estado_de_salud}
-                    </Text>
-                )}
-                {type === 'lost' && (
-                    <Text style={styles.field}>
-                        <Text style={{ fontWeight: 'bold' }}>Recompensa: </Text>
-                        {pet.valor_recompensa}
-                    </Text>
-                )}
-
-                {/* Número clicable para WhatsApp */}
-                {phoneToShow && (
-                    <TouchableOpacity onPress={handleWhatsApp}>
-                        <Text style={styles.field}>
-                            <Text style={{ fontWeight: 'bold' }}>Teléfono: </Text>
-                            <Text style={{ color: '#F4A83D', textDecorationLine: 'underline' }}>
-                                {String(phoneToShow)}
-                            </Text>
-                        </Text>
+                    {/* Imagen clicable para ver en grande */}
+                    <TouchableOpacity onPress={handleViewImage} activeOpacity={0.8}>
+                        <Image source={{ uri: pet.image_url }} style={styles.image} />
                     </TouchableOpacity>
-                )}
 
-                {pet.ubicacion && (
-                    <View style={styles.mapContainer}>
+                    {/* Detalles del reporte */}
+                    <Text style={styles.field}>
+                        <Text style={{ fontWeight: 'bold' }}>Especie: </Text>
+                        {pet.especies?.nombre}
+                    </Text>
+                    <Text style={styles.field}>
+                        <Text style={{ fontWeight: 'bold' }}>Raza: </Text>
+                        {pet.razas?.nombre}
+                    </Text>
+                    <Text style={styles.field}>
+                        <Text style={{ fontWeight: 'bold' }}>Tamaño: </Text>
+                        {pet.tamanos?.nombre}
+                    </Text>
+                    <Text style={styles.field}>
+                        <Text style={{ fontWeight: 'bold' }}>Color: </Text>
+                        {pet.colores?.nombre}
+                    </Text>
+
+                    {pet.estado_de_salud && (
                         <Text style={styles.field}>
-                            <Text style={{ fontWeight: 'bold' }}>Ubicación: </Text>
-                            {pet.punto_referencia}
+                            <Text style={{ fontWeight: 'bold' }}>Salud: </Text>
+                            {pet.estado_de_salud}
                         </Text>
-                        <MapView
-                            style={styles.map}
-                            initialRegion={{
-                                latitude: pet.ubicacion.lat,
-                                longitude: pet.ubicacion.lng,
-                                latitudeDelta: 0.005,
-                                longitudeDelta: 0.005,
-                            }}
-                        >
-                            <Marker
-                                coordinate={{
+                    )}
+                    {type === 'lost' && (
+                        <Text style={styles.field}>
+                            <Text style={{ fontWeight: 'bold' }}>Recompensa: </Text>
+                            {pet.valor_recompensa}
+                        </Text>
+                    )}
+
+                    {/* Número clicable para WhatsApp */}
+                    {phoneToShow && (
+                        <TouchableOpacity onPress={handleWhatsApp}>
+                            <Text style={styles.field}>
+                                <Text style={{ fontWeight: 'bold' }}>Teléfono: </Text>
+                                <Text style={{ color: '#F4A83D', textDecorationLine: 'underline' }}>
+                                    {String(phoneToShow)}
+                                </Text>
+                            </Text>
+                        </TouchableOpacity>
+                    )}
+
+                    {pet.ubicacion && (
+                        <View style={styles.mapContainer}>
+                            <Text style={styles.field}>
+                                <Text style={{ fontWeight: 'bold' }}>Ubicación: </Text>
+                                {pet.punto_referencia}
+                            </Text>
+                            <MapView
+                                style={styles.map}
+                                initialRegion={{
                                     latitude: pet.ubicacion.lat,
                                     longitude: pet.ubicacion.lng,
+                                    latitudeDelta: 0.005,
+                                    longitudeDelta: 0.005,
                                 }}
-                                title={pet.nombre}
-                                description="Última ubicación reportada"
-                            />
-                        </MapView>
-                    </View>
-                )}
+                            >
+                                <Marker
+                                    coordinate={{
+                                        latitude: pet.ubicacion.lat,
+                                        longitude: pet.ubicacion.lng,
+                                    }}
+                                    title={pet.nombre}
+                                    description="Última ubicación reportada"
+                                />
+                            </MapView>
+                        </View>
+                    )}
 
-                {/* Botón volver */}
-                <TouchableOpacity style={styles.button} onPress={() => {
-                    if (from === 'mapas') router.push('/mapas');
-                    else if (from === 'buscar') router.push({ pathname: '/buscar', params: { query, selectedCategory, selectedReportType } });
-                    else router.back();
-                }}>
-                    <Text style={styles.buttonText}>Volver</Text>
-                </TouchableOpacity>
-            </ScrollView>
+                    {/* Botón volver */}
+                    <TouchableOpacity style={styles.button} onPress={() => {
+                        if (from === 'mapas') router.push('/mapas');
+                        else if (from === 'buscar') router.push({ pathname: '/buscar', params: { query, selectedCategory, selectedReportType } });
+                        else router.back();
+                    }}>
+                        <Text style={styles.buttonText}>Volver</Text>
+                    </TouchableOpacity>
+                </ScrollView>
 
-            {/* Modal para mostrar la imagen en grande */}
-            <Modal
-                animationType="fade"
-                transparent={true}
-                visible={modalVisible}
-                onRequestClose={() => setModalVisible(false)}
-            >
-                <View style={styles.modalContainer}>
-                    <View style={styles.modalContent}>
-                        <TouchableOpacity
-                            style={styles.closeModalButton}
-                            onPress={() => setModalVisible(false)}
-                        >
-                            <Ionicons name="close" size={30} color="#fff" />
-                        </TouchableOpacity>
-                        <Image source={{ uri: pet.image_url }} style={styles.modalImage} resizeMode="contain" />
+                {/* Modal para mostrar la imagen en grande */}
+                <Modal
+                    animationType="fade"
+                    transparent={true}
+                    visible={modalVisible}
+                    onRequestClose={() => setModalVisible(false)}
+                >
+                    <View style={styles.modalContainer}>
+                        <View style={styles.modalContent}>
+                            <TouchableOpacity
+                                style={styles.closeModalButton}
+                                onPress={() => setModalVisible(false)}
+                            >
+                                <Ionicons name="close" size={30} color="#fff" />
+                            </TouchableOpacity>
+                            <Image source={{ uri: pet.image_url }} style={styles.modalImage} resizeMode="contain" />
+                        </View>
                     </View>
-                </View>
-            </Modal>
-        </>
+                </Modal>
+            </>
+        </ImageBackground>
     );
 }
 
@@ -193,7 +200,7 @@ const styles = StyleSheet.create({
     },
     container: {
         padding: 20,
-        backgroundColor: '#FFF',
+
     },
     image: {
         width: '80%',
@@ -204,7 +211,7 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
     },
     title: {
-        fontSize: 30,
+        fontSize: 40,
         fontWeight: '700',
         marginBottom: 10,
         textAlign: 'center',
@@ -212,9 +219,10 @@ const styles = StyleSheet.create({
         marginTop: 20,
     },
     field: {
-        fontSize: 16,
+        fontSize: 17,
         color: '#444',
         marginBottom: 6,
+        marginLeft: '10%'
     },
     mapContainer: {
         marginVertical: 20,
@@ -263,5 +271,8 @@ const styles = StyleSheet.create({
     modalImage: {
         width: '100%',
         height: '100%'
+    },
+    background: {
+        flex: 1,
     },
 });

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Dimensions, Image, Modal, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, Image, Modal, TouchableOpacity, ImageBackground } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { supabase } from '../../lib/supabase';
 import { Ionicons } from '@expo/vector-icons';
@@ -57,122 +57,128 @@ export default function Mapas() {
     const closeModal = () => setSelectedReport(null);
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>FiruFinds</Text>
-            <Text style={styles.subtitle}>
-                Estos son los reportes de mascotas halladas y perdidas en la zona
-            </Text>
-            {/* Botón flotante "i" para mostrar la leyenda */}
-            <TouchableOpacity style={styles.infoButton} onPress={() => setShowLegend(!showLegend)}>
-                <Ionicons name="information-circle" size={24} color="white" />
-            </TouchableOpacity>
+        <ImageBackground
+            source={require('../../assets/images/fondo.png')}
+            style={styles.background}
+            resizeMode="cover" // 'cover', 'contain', 'stretch', etc.
+        >
+            <View style={styles.container}>
+                <Text style={styles.title}>FiruFinds</Text>
+                <Text style={styles.subtitle}>
+                    Estos son los reportes de mascotas halladas y perdidas en la zona
+                </Text>
+                {/* Botón flotante "i" para mostrar la leyenda */}
+                <TouchableOpacity style={styles.infoButton} onPress={() => setShowLegend(!showLegend)}>
+                    <Ionicons name="information-circle" size={24} color="white" />
+                </TouchableOpacity>
 
-            {/* Leyenda (se muestra solo si showLegend es true) */}
-            {showLegend && (
-                <View style={styles.legendContainer}>
-                    <Text style={styles.legendTitle}>Leyenda</Text>
-                    <View style={styles.legendItem}>
-                        <View style={[styles.legendColor, { backgroundColor: '#F4A83D' }]} />
-                        <Text style={styles.legendText}>Mascota encontrada</Text>
-                    </View>
-                    <View style={styles.legendItem}>
-                        <View style={[styles.legendColor, { backgroundColor: 'lightblue' }]} />
-                        <Text style={styles.legendText}>Mascota perdida</Text>
-                    </View>
-                </View>
-            )}
-
-            <MapView style={styles.map} initialRegion={region}>
-                {/* Marcadores para reportes ENCONTRADOS */}
-                {foundPets.map((report) => {
-                    if (!report.ubicacion) return null;
-                    const { lat, lng } = report.ubicacion;
-                    return (
-                        <Marker
-                            key={`found-${report.id}`}
-                            coordinate={{ latitude: lat, longitude: lng }}
-                            pinColor="#F4A83D"
-                            onPress={() => setSelectedReport({ ...report, tipo: 'found' })}
-                        />
-                    );
-                })}
-
-                {/* Marcadores para reportes PERDIDOS  */}
-                {lostPets.map((report) => {
-                    if (!report.ubicacion) return null;
-                    const { lat, lng } = report.ubicacion;
-                    return (
-                        <Marker
-                            key={`lost-${report.id}`}
-                            coordinate={{ latitude: lat, longitude: lng }}
-                            pinColor="lightblue"
-                            onPress={() => setSelectedReport({ ...report, tipo: 'lost' })}
-
-                        />
-
-                    );
-                })}
-            </MapView>
-
-            {/* Modal para mostrar la información del reporte seleccionado */}
-            {selectedReport && (
-                <Modal
-                    visible={true}
-                    transparent={true}
-                    animationType="slide"
-                    onRequestClose={closeModal}
-                >
-                    <TouchableOpacity style={styles.modalOverlay} onPress={closeModal}>
-                        <View style={styles.modalContainer}>
-                            {/* Mostrar la raza en vez del nombre en reportes encontrados */}
-                            <Text style={styles.modalTitle}>
-                                {selectedReport.tipo === 'found'
-                                    ? selectedReport.raza?.nombre || 'Sin raza'
-                                    : selectedReport.nombre || 'Sin nombre'}
-                            </Text>
-                            <Text style={styles.modalDescription}>
-                                {selectedReport.tipo === 'found'
-                                    ? 'Mascota encontrada'
-                                    : 'Mascota perdida'}
-                            </Text>
-                            {selectedReport.image_url && (
-                                <Image
-                                    source={{ uri: selectedReport.image_url }}
-                                    style={styles.modalImage}
-                                    resizeMode="cover"
-                                />
-                            )}
-                            <TouchableOpacity style={styles.closeButton} onPress={closeModal}>
-                                <Text style={styles.closeButtonText}>Cerrar</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={[styles.closeButton]}
-                                onPress={() => {
-                                    router.push({
-                                        pathname: '/detalles',
-                                        params: {
-                                            id: selectedReport.id,
-                                            type: selectedReport.tipo,
-                                            from: 'mapas'
-                                        }
-                                    });
-                                    setSelectedReport(null); // Cierra el modal
-                                }}
-                            >
-                                <Text style={styles.closeButtonText}>Ver más</Text>
-                            </TouchableOpacity>
+                {/* Leyenda (se muestra solo si showLegend es true) */}
+                {showLegend && (
+                    <View style={styles.legendContainer}>
+                        <Text style={styles.legendTitle}>Leyenda</Text>
+                        <View style={styles.legendItem}>
+                            <View style={[styles.legendColor, { backgroundColor: '#F4A83D' }]} />
+                            <Text style={styles.legendText}>Mascota encontrada</Text>
                         </View>
-                    </TouchableOpacity>
-                </Modal>
-            )}
-        </View>
+                        <View style={styles.legendItem}>
+                            <View style={[styles.legendColor, { backgroundColor: 'lightblue' }]} />
+                            <Text style={styles.legendText}>Mascota perdida</Text>
+                        </View>
+                    </View>
+                )}
+
+                <MapView style={styles.map} initialRegion={region}>
+                    {/* Marcadores para reportes ENCONTRADOS */}
+                    {foundPets.map((report) => {
+                        if (!report.ubicacion) return null;
+                        const { lat, lng } = report.ubicacion;
+                        return (
+                            <Marker
+                                key={`found-${report.id}`}
+                                coordinate={{ latitude: lat, longitude: lng }}
+                                pinColor="#F4A83D"
+                                onPress={() => setSelectedReport({ ...report, tipo: 'found' })}
+                            />
+                        );
+                    })}
+
+                    {/* Marcadores para reportes PERDIDOS  */}
+                    {lostPets.map((report) => {
+                        if (!report.ubicacion) return null;
+                        const { lat, lng } = report.ubicacion;
+                        return (
+                            <Marker
+                                key={`lost-${report.id}`}
+                                coordinate={{ latitude: lat, longitude: lng }}
+                                pinColor="lightblue"
+                                onPress={() => setSelectedReport({ ...report, tipo: 'lost' })}
+
+                            />
+
+                        );
+                    })}
+                </MapView>
+
+                {/* Modal para mostrar la información del reporte seleccionado */}
+                {selectedReport && (
+                    <Modal
+                        visible={true}
+                        transparent={true}
+                        animationType="slide"
+                        onRequestClose={closeModal}
+                    >
+                        <TouchableOpacity style={styles.modalOverlay} onPress={closeModal}>
+                            <View style={styles.modalContainer}>
+                                {/* Mostrar la raza en vez del nombre en reportes encontrados */}
+                                <Text style={styles.modalTitle}>
+                                    {selectedReport.tipo === 'found'
+                                        ? selectedReport.raza?.nombre || 'Sin raza'
+                                        : selectedReport.nombre || 'Sin nombre'}
+                                </Text>
+                                <Text style={styles.modalDescription}>
+                                    {selectedReport.tipo === 'found'
+                                        ? 'Mascota encontrada'
+                                        : 'Mascota perdida'}
+                                </Text>
+                                {selectedReport.image_url && (
+                                    <Image
+                                        source={{ uri: selectedReport.image_url }}
+                                        style={styles.modalImage}
+                                        resizeMode="cover"
+                                    />
+                                )}
+                                <TouchableOpacity style={styles.closeButton} onPress={closeModal}>
+                                    <Text style={styles.closeButtonText}>Cerrar</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={[styles.closeButton]}
+                                    onPress={() => {
+                                        router.push({
+                                            pathname: '/detalles',
+                                            params: {
+                                                id: selectedReport.id,
+                                                type: selectedReport.tipo,
+                                                from: 'mapas'
+                                            }
+                                        });
+                                        setSelectedReport(null); // Cierra el modal
+                                    }}
+                                >
+                                    <Text style={styles.closeButtonText}>Ver más</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </TouchableOpacity>
+                    </Modal>
+                )}
+            </View>
+        </ImageBackground>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#FFF',
+
     },
     title: {
         marginTop: 11,
@@ -268,6 +274,9 @@ const styles = StyleSheet.create({
     },
     legendText: {
         fontSize: 14,
+    },
+    background: {
+        flex: 1,
     },
 }
 );

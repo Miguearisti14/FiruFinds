@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator, StyleSheet, Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator, StyleSheet, Image, ImageBackground } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { supabase } from '../../lib/supabase';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -155,107 +155,113 @@ const Buscar = () => {
     }, []); // Se ejecuta solo una vez al montar
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>FiruFinds</Text>
-            <Text style={styles.subtitle}>Buscar Reportes</Text>
-            <View style={styles.pickerContainer}>
-                <Picker
-                    selectedValue={selectedReportType}
-                    onValueChange={(itemValue) => {
-                        setSelectedReportType(itemValue as ReportType);
-                        setQuery('');
-                        setSuggestions([]);
-                    }}
-                    style={styles.picker}
-                    itemStyle={styles.pickerItem}
-                    mode="dropdown"
-                >
-                    <Picker.Item label="Perdidos" value="Perdidos" />
-                    <Picker.Item label="Encontrados" value="Encontrados" />
-                </Picker>
-            </View>
-            <View style={styles.pickerContainer}>
-                <Picker
-                    selectedValue={selectedCategory}
-                    onValueChange={(itemValue) => {
-                        setSelectedCategory(itemValue as Category);
-                        setQuery('');
-                        setSuggestions([]);
-                    }}
-                    style={styles.picker}
-                    itemStyle={styles.pickerItem}
-                    mode="dropdown"
-                >
-                    <Picker.Item label="Raza" value="raza" />
-                    <Picker.Item label="Especie" value="especie" />
-                    <Picker.Item label="Tamaño" value="tamano" />
-                    <Picker.Item label="Color" value="color" />
-                    <Picker.Item label="Nombre" value="nombre" />
-                </Picker>
-            </View>
-            <TextInput
-                style={styles.input}
-                value={query}
-                onChangeText={handleTextChange}
-                placeholder="Escribe para filtrar..."
-            />
-            {loadingSuggestions && <ActivityIndicator size="small" color="#0000ff" />}
-            {!loadingSuggestions && suggestions.length > 0 && (
-                <View style={styles.suggestionsContainer}>
-                    {suggestions.map((item) => (
-                        <TouchableOpacity
-                            key={item.id}
-                            onPress={() => selectSuggestion(item)}
-                            style={styles.suggestionItem}
-                        >
-                            <Text>{item.nombre}</Text>
-                        </TouchableOpacity>
-                    ))}
+        <ImageBackground
+            source={require('../../assets/images/fondo.png')}
+            style={styles.background}
+            resizeMode="cover" // 'cover', 'contain', 'stretch', etc.
+        >
+            <View style={styles.container}>
+                <Text style={styles.title}>FiruFinds</Text>
+                <Text style={styles.subtitle}>Buscar Reportes</Text>
+                <View style={styles.pickerContainer}>
+                    <Picker
+                        selectedValue={selectedReportType}
+                        onValueChange={(itemValue) => {
+                            setSelectedReportType(itemValue as ReportType);
+                            setQuery('');
+                            setSuggestions([]);
+                        }}
+                        style={styles.picker}
+                        itemStyle={styles.pickerItem}
+                        mode="dropdown"
+                    >
+                        <Picker.Item label="Perdidos" value="Perdidos" />
+                        <Picker.Item label="Encontrados" value="Encontrados" />
+                    </Picker>
                 </View>
-            )}
-            <TouchableOpacity style={styles.button} onPress={fetchReportes}>
-                <Text style={styles.buttonText}>Buscar</Text>
-            </TouchableOpacity>
-            {loadingResults ? (
-                <ActivityIndicator size="large" color="#0000ff" />
-            ) : (
-                <FlatList
-                    data={searchResults}
-                    keyExtractor={(item) => `${item.source}_${item.id}`}
-                    renderItem={({ item }) => (
-                        <TouchableOpacity
-                            style={{ flex: 1, margin: 5 }}
-                            onPress={() => {
-                                const reportType = selectedReportType === 'Perdidos' ? 'lost' : 'found';
-                                router.push({
-                                    pathname: '/detalles',
-                                    params: {
-                                        id: item.id,
-                                        type: reportType,
-                                        from: 'buscar',
-                                        query,
-                                        selectedCategory,
-                                        selectedReportType,
-                                    }
-                                });
-                                setSelectedReportType('Perdidos');
-                            }}
-                        >
-                            <View style={styles.resultItem}>
-                                <Text style={styles.resultText}>
-                                    <Text style={{ fontWeight: 'bold' }}>Nombre: </Text>
-                                    {item.nombre}
-                                </Text>
-                                <Image source={{ uri: item.image_url }} style={styles.image} />
-                            </View>
-                        </TouchableOpacity>
-                    )}
-                    ListEmptyComponent={
-                        <Text style={styles.noResults}>No se encontraron resultados.</Text>
-                    }
+                <View style={styles.pickerContainer}>
+                    <Picker
+                        selectedValue={selectedCategory}
+                        onValueChange={(itemValue) => {
+                            setSelectedCategory(itemValue as Category);
+                            setQuery('');
+                            setSuggestions([]);
+                        }}
+                        style={styles.picker}
+                        itemStyle={styles.pickerItem}
+                        mode="dropdown"
+                    >
+                        <Picker.Item label="Raza" value="raza" />
+                        <Picker.Item label="Especie" value="especie" />
+                        <Picker.Item label="Tamaño" value="tamano" />
+                        <Picker.Item label="Color" value="color" />
+                        <Picker.Item label="Nombre" value="nombre" />
+                    </Picker>
+                </View>
+                <TextInput
+                    style={styles.input}
+                    value={query}
+                    onChangeText={handleTextChange}
+                    placeholder="Escribe para filtrar..."
                 />
-            )}
-        </View>
+                {loadingSuggestions && <ActivityIndicator size="small" color="#0000ff" />}
+                {!loadingSuggestions && suggestions.length > 0 && (
+                    <View style={styles.suggestionsContainer}>
+                        {suggestions.map((item) => (
+                            <TouchableOpacity
+                                key={item.id}
+                                onPress={() => selectSuggestion(item)}
+                                style={styles.suggestionItem}
+                            >
+                                <Text>{item.nombre}</Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                )}
+                <TouchableOpacity style={styles.button} onPress={fetchReportes}>
+                    <Text style={styles.buttonText}>Buscar</Text>
+                </TouchableOpacity>
+                {loadingResults ? (
+                    <ActivityIndicator size="large" color="#0000ff" />
+                ) : (
+                    <FlatList
+                        data={searchResults}
+                        keyExtractor={(item) => `${item.source}_${item.id}`}
+                        renderItem={({ item }) => (
+                            <TouchableOpacity
+                                style={{ flex: 1, margin: 5 }}
+                                onPress={() => {
+                                    const reportType = selectedReportType === 'Perdidos' ? 'lost' : 'found';
+                                    router.push({
+                                        pathname: '/detalles',
+                                        params: {
+                                            id: item.id,
+                                            type: reportType,
+                                            from: 'buscar',
+                                            query,
+                                            selectedCategory,
+                                            selectedReportType,
+                                        }
+                                    });
+                                    setSelectedReportType('Perdidos');
+                                }}
+                            >
+                                <View style={styles.resultItem}>
+                                    <Text style={styles.resultText}>
+                                        <Text style={{ fontWeight: 'bold' }}>Nombre: </Text>
+                                        {item.nombre}
+                                    </Text>
+                                    <Image source={{ uri: item.image_url }} style={styles.image} />
+                                </View>
+                            </TouchableOpacity>
+                        )}
+                        ListEmptyComponent={
+                            <Text style={styles.noResults}>No se encontraron resultados.</Text>
+                        }
+                    />
+                )}
+            </View>
+        </ImageBackground>
     );
 };
 
@@ -265,7 +271,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 16,
-        backgroundColor: '#fff'
+
     },
     pickerContainer: {
         borderWidth: 1,
@@ -343,5 +349,8 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         resizeMode: 'cover',
         marginTop: 10
+    },
+    background: {
+        flex: 1,
     },
 });

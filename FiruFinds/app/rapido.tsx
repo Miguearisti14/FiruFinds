@@ -10,6 +10,7 @@ import {
     StatusBar,
     SafeAreaView,
     ScrollView,
+    ImageBackground
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -44,6 +45,7 @@ const SearchableDropdown = ({ data, value, onSelect, placeholder, disabled }) =>
     }, [query, data]);
 
     return (
+
         <View style={styles.dropdownContainer}>
             <TextInput
                 style={[
@@ -308,138 +310,145 @@ export default function Rapido() {
 
     return (
         <ScrollView style={{ flex: 1 }}>
-            <SafeAreaView style={styles.safeArea}>
-                <StatusBar barStyle="dark-content" backgroundColor="#FFF" translucent={false} />
-                <View style={styles.container}>
-                    <View style={styles.imageSection}>
-                        <View style={styles.textContainer}>
-                            <Text style={styles.title}>
-                                Tómale una foto a la mascota que encontraste y súbela
-                            </Text>
+            <ImageBackground
+                source={require('../assets/images/fondo.png')}
+                style={styles.background}
+                resizeMode="cover" // 'cover', 'contain', 'stretch', etc.
+            >
+                <SafeAreaView style={styles.safeArea}>
+                    <StatusBar barStyle="dark-content" backgroundColor="#FFF" translucent={false} />
+                    <View style={styles.container}>
+                        <View style={styles.imageSection}>
+                            <View style={styles.textContainer}>
+                                <Text style={styles.title}>
+                                    Tómale una foto a la mascota que encontraste y súbela
+                                </Text>
+                            </View>
+                            <TouchableOpacity style={styles.imageContainer} onPress={pickImage}>
+                                {imageUri ? (
+                                    <Image source={{ uri: imageUri }} style={styles.previewImage} />
+                                ) : (
+                                    <>
+                                        <Ionicons name="image-outline" size={40} color="#777" />
+                                        <Text style={styles.imageText}>Subir una imagen</Text>
+                                    </>
+                                )}
+                            </TouchableOpacity>
                         </View>
-                        <TouchableOpacity style={styles.imageContainer} onPress={pickImage}>
-                            {imageUri ? (
-                                <Image source={{ uri: imageUri }} style={styles.previewImage} />
+                        <Text style={styles.label}>¿Dónde la encontraste?</Text>
+                        <View style={styles.mapContainer}>
+                            <MapView
+                                style={styles.map}
+                                initialRegion={initialRegion}
+                                onPress={handleMapPress}
+                            >
+                                {coordinates && (
+                                    <Marker
+                                        coordinate={{ latitude: coordinates.lat, longitude: coordinates.lng }}
+                                        title="Ubicación seleccionada"
+                                    />
+                                )}
+                            </MapView>
+                            {!coordinates && (
+                                <Text style={styles.mapPlaceholderText}>Selecciona una ubicación...</Text>
+                            )}
+                        </View>
+
+                        <Text style={styles.label}>Añade un punto de referencia</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Al lado de..."
+                            value={reference}
+                            onChangeText={setReference}
+                        />
+
+                        <Text style={styles.label}>Comparte un número para contactarte</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="301..."
+                            keyboardType="phone-pad"
+                            value={phone}
+                            onChangeText={setPhone}
+                        />
+
+                        {/* Campo: Especie */}
+                        <Text style={styles.label}>Especie de la mascota que encontraste</Text>
+                        <SearchableDropdown
+                            data={especies}
+                            value={especie}
+                            placeholder="Selecciona una especie..."
+                            onSelect={(item) => {
+                                setEspecie(item);
+                                setEspecie(item.id);
+                                setSelectedEspecieId(item);
+                                setSelectedEspecieId(item.id);
+                                setRaza(null); // Reseteamos la raza al cambiar la especie
+                            }}
+                        />
+
+                        {/* Campo: Raza */}
+                        <Text style={styles.label}>Raza de la mascota que encontraste</Text>
+                        <SearchableDropdown
+                            data={razas}
+                            value={raza}
+                            placeholder="Selecciona una raza..."
+                            onSelect={(item) => {
+                                setRaza(item);
+                                setRaza(item.id);
+
+                            }}
+                            disabled={!selectedEspecieId}
+                        />
+
+                        {/* Campo: Color */}
+                        <Text style={styles.label}>Color de la mascota que encontraste</Text>
+                        <SearchableDropdown
+                            data={colores}
+                            value={color}
+                            placeholder="Selecciona un color..."
+                            onSelect={(item) => {
+                                setColor(item);
+                                setColor(item.id);
+
+                            }}
+                        />
+
+                        {/* Campo: Tamaño */}
+                        <Text style={styles.label}>Tamaño de la mascota que encontraste</Text>
+                        <SearchableDropdown
+                            data={tamanos}
+                            value={tamano}
+                            placeholder="Selecciona un tamaño..."
+                            onSelect={(item) => {
+                                setTamano(item);
+                                setTamano(item.id);
+
+                            }}
+                        />
+
+                        <TouchableOpacity
+                            style={styles.button}
+                            onPress={handleReport}
+                            disabled={uploading}
+                        >
+                            {uploading ? (
+                                <ActivityIndicator color="#FFF" />
                             ) : (
-                                <>
-                                    <Ionicons name="image-outline" size={40} color="#777" />
-                                    <Text style={styles.imageText}>Subir una imagen</Text>
-                                </>
+                                <Text style={styles.buttonText}>Reportar</Text>
                             )}
                         </TouchableOpacity>
                     </View>
-                    <Text style={styles.label}>¿Dónde la encontraste?</Text>
-                    <View style={styles.mapContainer}>
-                        <MapView
-                            style={styles.map}
-                            initialRegion={initialRegion}
-                            onPress={handleMapPress}
-                        >
-                            {coordinates && (
-                                <Marker
-                                    coordinate={{ latitude: coordinates.lat, longitude: coordinates.lng }}
-                                    title="Ubicación seleccionada"
-                                />
-                            )}
-                        </MapView>
-                        {!coordinates && (
-                            <Text style={styles.mapPlaceholderText}>Selecciona una ubicación...</Text>
-                        )}
-                    </View>
-
-                    <Text style={styles.label}>Añade un punto de referencia</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Al lado de..."
-                        value={reference}
-                        onChangeText={setReference}
-                    />
-
-                    <Text style={styles.label}>Comparte un número para contactarte</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="301..."
-                        keyboardType="phone-pad"
-                        value={phone}
-                        onChangeText={setPhone}
-                    />
-
-                    {/* Campo: Especie */}
-                    <Text style={styles.label}>Especie de la mascota que encontraste</Text>
-                    <SearchableDropdown
-                        data={especies}
-                        value={especie}
-                        placeholder="Selecciona una especie..."
-                        onSelect={(item) => {
-                            setEspecie(item);
-                            setEspecie(item.id);
-                            setSelectedEspecieId(item);
-                            setSelectedEspecieId(item.id);
-                            setRaza(null); // Reseteamos la raza al cambiar la especie
-                        }}
-                    />
-
-                    {/* Campo: Raza */}
-                    <Text style={styles.label}>Raza de la mascota que encontraste</Text>
-                    <SearchableDropdown
-                        data={razas}
-                        value={raza}
-                        placeholder="Selecciona una raza..."
-                        onSelect={(item) => {
-                            setRaza(item);
-                            setRaza(item.id);
-
-                        }}
-                        disabled={!selectedEspecieId}
-                    />
-
-                    {/* Campo: Color */}
-                    <Text style={styles.label}>Color de la mascota que encontraste</Text>
-                    <SearchableDropdown
-                        data={colores}
-                        value={color}
-                        placeholder="Selecciona un color..."
-                        onSelect={(item) => {
-                            setColor(item);
-                            setColor(item.id);
-
-                        }}
-                    />
-
-                    {/* Campo: Tamaño */}
-                    <Text style={styles.label}>Tamaño de la mascota que encontraste</Text>
-                    <SearchableDropdown
-                        data={tamanos}
-                        value={tamano}
-                        placeholder="Selecciona un tamaño..."
-                        onSelect={(item) => {
-                            setTamano(item);
-                            setTamano(item.id);
-
-                        }}
-                    />
-
-                    <TouchableOpacity
-                        style={styles.button}
-                        onPress={handleReport}
-                        disabled={uploading}
-                    >
-                        {uploading ? (
-                            <ActivityIndicator color="#FFF" />
-                        ) : (
-                            <Text style={styles.buttonText}>Reportar</Text>
-                        )}
-                    </TouchableOpacity>
-                </View>
-            </SafeAreaView>
+                </SafeAreaView>
+            </ImageBackground>
         </ScrollView>
+
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#FFF',
+
         paddingHorizontal: 20,
         paddingTop: 40,
     },
@@ -455,7 +464,7 @@ const styles = StyleSheet.create({
         borderColor: '#ccc',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#F5F5F5',
+
     },
     imageText: {
         marginTop: 5,
@@ -478,6 +487,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
         height: 40,
         marginBottom: 15,
+        backgroundColor: '#FFF'
     },
     button: {
         backgroundColor: '#F4A83D',
@@ -500,7 +510,6 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#F5F5F5',
         position: 'relative',
     },
     map: {
@@ -513,7 +522,6 @@ const styles = StyleSheet.create({
     },
     safeArea: {
         flex: 1,
-        backgroundColor: '#FFF',
     },
     imageSection: {
         flexDirection: 'row',
@@ -540,9 +548,12 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: '#eee',
     },
+    background: {
+        flex: 1,
+    },
 });
 
-// Estilos personalizados para el input del dropdown (se reutilizan en SearchableDropdown)
+
 const pickerSelectStyles = StyleSheet.create({
     inputIOS: {
         borderWidth: 1,
@@ -567,4 +578,5 @@ const pickerSelectStyles = StyleSheet.create({
     placeholder: {
         color: '#777',
     },
+
 });

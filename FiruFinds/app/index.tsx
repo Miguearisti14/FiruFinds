@@ -1,22 +1,28 @@
-import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, Image, StyleSheet, ImageBackground } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 
 export default function LandingScreen() {
     const router = useRouter();
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>FiruFinds</Text>
-            <Image source={require('../assets/images/logo.jpg')} style={styles.logo} />
+        <ImageBackground
+            source={require('../assets/images/fondo.png')}
+            style={styles.background}
+            resizeMode="cover" // 'cover', 'contain', 'stretch', etc.
+        >
+            <View style={styles.container}>
+                <Text style={styles.title}>FiruFinds</Text>
+                <Image source={require('../assets/images/logo.jpg')} style={styles.logo} />
 
-            <TouchableOpacity style={styles.button} onPress={() => router.push("/rapido")}>
-                <Text style={styles.buttonText}>Reporte Rápido</Text>
-            </TouchableOpacity>
+                <TouchableOpacity style={styles.button} onPress={() => router.push("/rapido")}>
+                    <Text style={styles.buttonText}>Reporte Rápido</Text>
+                </TouchableOpacity>
 
-            <TouchableOpacity style={styles.linkButton} onPress={() => router.push("/Auth")}>
-                <Text style={styles.linkText}>Iniciar Sesión</Text>
-            </TouchableOpacity>
-        </View>
+                <TouchableOpacity style={styles.linkButton} onPress={() => router.push("/Auth")}>
+                    <Text style={styles.linkText}>Iniciar Sesión</Text>
+                </TouchableOpacity>
+            </View>
+        </ImageBackground>
     );
 }
 
@@ -25,7 +31,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         alignItems: 'center',
-        backgroundColor: '#fff',
         paddingHorizontal: 20,
     },
     logo: {
@@ -62,5 +67,8 @@ const styles = StyleSheet.create({
         fontSize: 16,
         textDecorationLine: 'underline',
         fontWeight: '500',
+    },
+    background: {
+        flex: 1,
     },
 });

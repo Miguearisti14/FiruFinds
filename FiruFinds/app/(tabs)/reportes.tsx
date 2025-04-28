@@ -1,39 +1,45 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ImageBackground } from 'react-native';
 import { useRouter } from 'expo-router';
 
 export default function Reportes() {
     const router = useRouter();
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.headerTitle}>FiruFinds</Text>
+        <ImageBackground
+            source={require('../../assets/images/fondo.png')}
+            style={styles.background}
+            resizeMode="cover" // 'cover', 'contain', 'stretch', etc.
+        >
+            <View style={styles.container}>
+                <Text style={styles.headerTitle}>FiruFinds</Text>
 
-            <View style={styles.section}>
-                <Text style={styles.description}>
-                    Perdí a mi mascota y quiero buscarla
-                </Text>
-                <TouchableOpacity style={styles.button} onPress={() => router.push('../perdidos')}>
-                    <Text style={styles.buttonText}>Perdido</Text>
-                </TouchableOpacity>
-            </View>
+                <View style={styles.section}>
+                    <Text style={styles.description}>
+                        Perdí a mi mascota y quiero buscarla
+                    </Text>
+                    <TouchableOpacity style={styles.button} onPress={() => router.push('../perdidos')}>
+                        <Text style={styles.buttonText}>Perdido</Text>
+                    </TouchableOpacity>
+                </View>
 
-            <View style={styles.section}>
-                <Text style={styles.description}>
-                    Encontré a una mascota y quiero ayudarla a volver a casa
-                </Text>
-                <TouchableOpacity style={styles.button} onPress={() => router.push('../encontrados')}>
-                    <Text style={styles.buttonText}>Encontrado</Text>
-                </TouchableOpacity>
+                <View style={styles.section}>
+                    <Text style={styles.description}>
+                        Encontré a una mascota y quiero ayudarla a volver a casa
+                    </Text>
+                    <TouchableOpacity style={styles.button} onPress={() => router.push('../encontrados')}>
+                        <Text style={styles.buttonText}>Encontrado</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
-        </View>
+        </ImageBackground>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#FFF',
+
         padding: 20,
         alignItems: 'center',
         justifyContent: 'flex-start',
@@ -70,5 +76,8 @@ const styles = StyleSheet.create({
         color: '#FFF',
         fontWeight: 'bold',
         fontSize: 16,
+    },
+    background: {
+        flex: 1,
     },
 });
