@@ -16,6 +16,9 @@ import { createMaterialTopTabNavigator } from '@react-navigation/material-top-ta
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { supabase } from '../../lib/supabase';
+import { registerForPushNotificationsAsync, setupNotificationListeners } from '../../utils/notifications';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -157,6 +160,11 @@ function FoundPetsScreen() {
 export default function Home() {
     const router = useRouter();
 
+    useEffect(() => {
+        const cleanup = setupNotificationListeners();
+        return cleanup;
+    }, []);
+
     // Salir de la app con el botón atrás del celular
     useFocusEffect(
         React.useCallback(() => {
@@ -197,9 +205,9 @@ export default function Home() {
                     />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>FiruFinds</Text>
-                <TouchableOpacity>
-                    <Ionicons
-                        name="notifications-outline"
+                <TouchableOpacity onPress={() => router.push('../notificaciones')}>
+                    <MaterialCommunityIcons
+                        name="paw"
                         size={30}
                         color="#000"
                     />
