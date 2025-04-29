@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Alert, Modal } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Alert, Modal, ImageBackground } from 'react-native';
 import { supabase } from '../lib/supabase';
 import { useRouter } from 'expo-router';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import * as ImagePicker from 'expo-image-picker';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+
 
 export default function Perfil() {
     const [userId, setUserId] = useState<string | null>(null);
@@ -174,75 +176,81 @@ export default function Perfil() {
     };
 
     return (
-        <View style={styles.container}>
-            <View style={styles.header}>
-                <Text style={styles.appName}>FiruFinds</Text>
-                <TouchableOpacity onPress={() => router.push('/(tabs)/home')} style={styles.closeButton}>
-                    <Ionicons name="close" size={24} color="#333" />
-                </TouchableOpacity>
-            </View>
-
-            <TouchableOpacity onPress={showImageOptions} style={styles.profileImageContainer}>
-                <Image
-                    source={{ uri: `${profileImage}?cb=${cacheBuster}` }}
-                    style={styles.profileImage}
-                />
-            </TouchableOpacity>
-
-            <Text style={styles.title}>{displayName}</Text>
-
-            <TouchableOpacity style={styles.navItem}>
-                <Ionicons name="person-outline" size={20} color="#333" />
-                <Text style={styles.navItemText}>Mi perfil</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.navItem}>
-                <Ionicons name="notifications-outline" size={20} color="#333" />
-                <Text style={styles.navItemText}>Notificaciones</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.navItem} onPress={() => router.push('/mis_reportes')}>
-                <Ionicons name="clipboard-outline" size={20} color="#333" />
-                <Text style={styles.navItemText}>Mis reportes</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-                style={styles.linkButton}
-                onPress={handleLogout}
-            >
-                <Text style={styles.linkText}>Cerrar Sesión</Text>
-            </TouchableOpacity>
-
-            <Modal
-                animationType="fade"
-                transparent={true}
-                visible={modalVisible}
-                onRequestClose={() => setModalVisible(false)}
-            >
-                <View style={styles.modalContainer}>
-                    <View style={styles.modalContent}>
-                        <TouchableOpacity
-                            style={styles.closeModalButton}
-                            onPress={() => setModalVisible(false)}
-                        >
-                            <Ionicons name="close" size={30} color="#fff" />
-                        </TouchableOpacity>
-                        <Image
-                            source={{ uri: `${profileImage}?cb=${cacheBuster}` }}
-                            style={styles.largeImage}
-                            resizeMode="contain"
-                        />
-                    </View>
+        <ImageBackground
+            source={require('../assets/images/fondo.png')}
+            style={styles.background}
+            resizeMode="cover" // 'cover', 'contain', 'stretch', etc.
+        >
+            <View style={styles.container}>
+                <View style={styles.header}>
+                    <Text style={styles.appName}>FiruFinds</Text>
+                    <TouchableOpacity onPress={() => router.push('/(tabs)/home')} style={styles.closeButton}>
+                        <Ionicons name="close" size={24} color="#333" />
+                    </TouchableOpacity>
                 </View>
-            </Modal>
-        </View>
+
+                <TouchableOpacity onPress={showImageOptions} style={styles.profileImageContainer}>
+                    <Image
+                        source={{ uri: `${profileImage}?cb=${cacheBuster}` }}
+                        style={styles.profileImage}
+                    />
+                </TouchableOpacity>
+
+                <Text style={styles.title}>{displayName}</Text>
+
+                <TouchableOpacity style={styles.navItem}>
+                    <Ionicons name="person-outline" size={20} color="#333" />
+                    <Text style={styles.navItemText}>Mi perfil</Text>
+                </TouchableOpacity>
+
+
+                <TouchableOpacity style={styles.navItem} onPress={() => router.push('/mis_reportes')}>
+                    <Ionicons name="clipboard-outline" size={20} color="#333" />
+                    <Text style={styles.navItemText}>Mis reportes</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={() => router.push('../notificaciones')} style={styles.navItem}>
+                    <MaterialCommunityIcons name="paw" size={20} color="#333" />
+                    <Text style={styles.navItemText}>Coincidencias</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={styles.linkButton}
+                    onPress={handleLogout}
+                >
+                    <Text style={styles.linkText}>Cerrar Sesión</Text>
+                </TouchableOpacity>
+
+                <Modal
+                    animationType="fade"
+                    transparent={true}
+                    visible={modalVisible}
+                    onRequestClose={() => setModalVisible(false)}
+                >
+                    <View style={styles.modalContainer}>
+                        <View style={styles.modalContent}>
+                            <TouchableOpacity
+                                style={styles.closeModalButton}
+                                onPress={() => setModalVisible(false)}
+                            >
+                                <Ionicons name="close" size={30} color="#fff" />
+                            </TouchableOpacity>
+                            <Image
+                                source={{ uri: `${profileImage}?cb=${cacheBuster}` }}
+                                style={styles.largeImage}
+                                resizeMode="contain"
+                            />
+                        </View>
+                    </View>
+                </Modal>
+            </View>
+        </ImageBackground>
     );
 }
 
-const styles = StyleSheet.create({
+export const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
         padding: 16,
     },
     header: {
@@ -284,6 +292,7 @@ const styles = StyleSheet.create({
         paddingVertical: 15,
         borderBottomWidth: 1,
         borderBottomColor: '#ccc',
+        backgroundColor: '#FFF'
     },
     navItemText: {
         fontSize: 16,
@@ -321,5 +330,8 @@ const styles = StyleSheet.create({
         top: 10,
         right: 10,
         zIndex: 1,
+    },
+    background: {
+        flex: 1,
     },
 });

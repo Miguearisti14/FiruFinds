@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Text, Alert } from 'react-native';
+import { View, StyleSheet, Text, Alert, ImageBackground } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Input, Button } from '@rneui/themed';
 import { supabase } from '../lib/supabase';
@@ -54,16 +54,22 @@ export default function RegisterScreen() {
     }
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Registrarse</Text>
+        <ImageBackground
+            source={require('../assets/images/fondo.png')}
+            style={styles.background}
+            resizeMode="cover" // 'cover', 'contain', 'stretch', etc.
+        >
+            <View style={styles.container}>
+                <Text style={styles.title}>Registrarse</Text>
 
-            <Input label="Nombre" value={name} onChangeText={setName} placeholder="Tu nombre" />
-            <Input label="Email" value={email} onChangeText={setEmail} placeholder="superhero@email.com" autoCapitalize="none" />
-            <Input label="Teléfono" value={phone} onChangeText={setPhone} placeholder="23234389" keyboardType="phone-pad" />
-            <Input label="Contraseña" value={password} onChangeText={setPassword} secureTextEntry placeholder="Tu contraseña" />
+                <Input label="Nombre" inputContainerStyle={styles.inputBox} value={name} onChangeText={setName} placeholder="Tu nombre" />
+                <Input label="Email" inputContainerStyle={styles.inputBox} value={email} onChangeText={setEmail} placeholder="superhero@email.com" autoCapitalize="none" />
+                <Input label="Teléfono" inputContainerStyle={styles.inputBox} value={phone} onChangeText={setPhone} placeholder="23234389" keyboardType="phone-pad" />
+                <Input label="Contraseña" inputContainerStyle={styles.inputBox} value={password} onChangeText={setPassword} secureTextEntry placeholder="Tu contraseña" />
 
-            <Button title="Registrarse" onPress={signUpWithEmail} loading={loading} buttonStyle={styles.button} />
-        </View>
+                <Button title="Registrarse" onPress={signUpWithEmail} loading={loading} buttonStyle={styles.button} />
+            </View>
+        </ImageBackground>
     );
 }
 const styles = StyleSheet.create({
@@ -71,7 +77,6 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#FFF',
         paddingHorizontal: 20,
     },
     title: {
@@ -88,5 +93,13 @@ const styles = StyleSheet.create({
         width: '100%',
         marginTop: 20,
         maxWidth: '95%'
+    },
+    background: {
+        flex: 1,
+    },
+    inputBox: {
+        borderBottomWidth: 1,
+        borderBottomColor: '#4A3F35',
+        backgroundColor: '#FFF'
     },
 });
