@@ -1,8 +1,18 @@
 import React, { useState } from 'react';
-import { Alert, StyleSheet, View, AppState, TouchableOpacity, Text, ImageBackground } from 'react-native';
+import {
+    Alert,
+    StyleSheet,
+    View,
+    AppState,
+    TouchableOpacity,
+    Text,
+    ImageBackground,
+    StatusBar,
+    SafeAreaView,
+} from 'react-native';
 import { supabase } from '../lib/supabase';
 import { Button, Input } from '@rneui/themed';
-import { Link, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { registerForPushNotificationsAsync } from '../utils/notifications';
 
 AppState.addEventListener('change', (state) => {
@@ -19,41 +29,31 @@ export default function Auth() {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
 
-    // Iniciar sesión
     async function signInWithEmail() {
         setLoading(true);
-
         try {
-            console.log('Attempting to sign in with email:', email);
             const { data, error } = await supabase.auth.signInWithPassword({
                 email,
                 password,
             });
 
             if (error) {
-                console.error('Login error:', error);
                 Alert.alert(error.message);
-                return false; // Indica que falló el inicio de sesión
+                return false;
             }
 
             if (data.user) {
-                console.log('Successfully logged in, user ID:', data.user.id);
-                // Register push notifications after successful login
                 try {
                     await registerForPushNotificationsAsync(data.user.id);
                 } catch (notificationError) {
-                    console.error('Error registering push notifications:', notificationError);
-                    // Don't fail the login if notification registration fails
-                    Alert.alert('Advertencia', 'No se pudo registrar las notificaciones push. Puedes intentarlo de nuevo desde tu perfil.');
+                    Alert.alert('Advertencia', 'No se pudo registrar las notificaciones push.');
                 }
-                return true; // Indica que fue exitoso
+                return true;
             }
 
-            console.log('No user data returned after login');
             return false;
         } catch (error) {
-            console.error('Unexpected error during login:', error);
-            Alert.alert('Error', 'Ocurrió un error inesperado. Por favor, intenta de nuevo.');
+            Alert.alert('Error', 'Ocurrió un error inesperado.');
             return false;
         } finally {
             setLoading(false);
@@ -61,57 +61,63 @@ export default function Auth() {
     }
 
     return (
-        <ImageBackground
-            source={require('../assets/images/fondo.png')}
-            style={styles.background}
-            resizeMode="cover" // 'cover', 'contain', 'stretch', etc.
-        >
-            <View style={styles.container}>
-                <Text style={styles.title}>Iniciar Sesión</Text>
+        <SafeAreaView style={{ flex: 1 }}>
+            <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
+            <ImageBackground
+                source={require('../assets/images/fondo.png')}
+                style={styles.background}
+                resizeMode="cover"
+            >
+                <View style={styles.container}>
+                    <Text style={styles.title}>Iniciar Sesión</Text>
 
-                <View style={styles.inputContainer}>
-                    <Input
-                        label="Correo"
-                        labelStyle={styles.label}
-                        onChangeText={(text) => setEmail(text)}
-                        value={email}
-                        placeholder="ejemplo@gmail.com"
-                        autoCapitalize="none"
-                        inputContainerStyle={styles.inputBox}
+                    <View style={styles.inputContainer}>
+                        <Input
+                            label="Correo"
+                            labelStyle={styles.label}
+                            onChangeText={setEmail}
+                            value={email}
+                            placeholder="ejemplo@gmail.com"
+                            autoCapitalize="none"
+                            inputContainerStyle={styles.inputBox}
+                        />
+                    </View>
+
+                    <View style={styles.inputContainer}>
+                        <Input
+                            label="contraseña"
+                            labelStyle={styles.label}
+                            onChangeText={setPassword}
+                            value={password}
+                            secureTextEntry
+                            placeholder="tu contraseña"
+                            autoCapitalize="none"
+                            inputContainerStyle={styles.inputBox}
+                        />
+                    </View>
+
+
+                    <Button
+                        title="Iniciar Sesión"
+                        disabled={loading}
+                        onPress={async () => {
+                            const success = await signInWithEmail();
+                            if (success) router.push('/(tabs)/home');
+                        }}
+                        buttonStyle={styles.button}
+                        titleStyle={styles.buttonText}
                     />
+
+                    <TouchableOpacity onPress={() => router.push('/register')} style={styles.linkContainer}>
+                        <Text style={styles.linkText}>Registrarse</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity onPress={() => router.push('/recuperar')} style={styles.linkContainer}>
+                        <Text style={styles.linkText}>Recuperar contraseña</Text>
+                    </TouchableOpacity>
                 </View>
-
-                <View style={styles.inputContainer}>
-                    <Input
-                        label="contraseña"
-                        labelStyle={styles.label}
-                        onChangeText={(text) => setPassword(text)}
-                        value={password}
-                        secureTextEntry={true}
-                        placeholder="tu contraseña"
-                        autoCapitalize="none"
-                        inputContainerStyle={styles.inputBox}
-                    />
-                </View>
-
-                <Button
-                    title="Iniciar Sesión"
-                    disabled={loading}
-                    onPress={async () => {
-                        const success = await signInWithEmail(); // Espera el resultado
-                        if (success) {
-                            router.push('/(tabs)/home'); // Redirige solo si fue exitoso
-                        }
-                    }}
-                    buttonStyle={styles.button}
-                    titleStyle={styles.buttonText}
-                />
-
-                <TouchableOpacity onPress={() => router.push('/register')} style={styles.linkContainer}>
-                    <Text style={styles.linkText}>Registrarse</Text>
-                </TouchableOpacity>
-            </View>
-        </ImageBackground>
+            </ImageBackground>
+        </SafeAreaView>
     );
 }
 
@@ -121,7 +127,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         paddingHorizontal: 20,
-        textAlign: 'left',
     },
     title: {
         fontSize: 28,
@@ -142,7 +147,7 @@ const styles = StyleSheet.create({
     inputBox: {
         borderBottomWidth: 1,
         borderBottomColor: '#4A3F35',
-        backgroundColor: '#FFF'
+        backgroundColor: '#FFF',
     },
     button: {
         backgroundColor: '#F4A83D',

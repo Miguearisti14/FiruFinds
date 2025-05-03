@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Recuperar Contraseña</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #f9f9f9;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h1 {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        button {
+            width: 100%;
+            background-color: #f4a83d;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .message {
+            margin-top: 15px;
+            text-align: center;
+            font-size: 14px;
+        }
+    </style>
+    <script type="module">
+        import { createClient } from 'https://esm.sh/@supabase/supabase-js'
+
+        const supabase = createClient('https://<TU-PROYECTO>.supabase.co', '<TU-API-KEY-PUBLICA>')
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelector('#reset-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const password = document.querySelector('#password').value;
+                const confirm = document.querySelector('#confirm-password').value;
+                const messageEl = document.querySelector('#message');
+
+                if (!password || password !== confirm) {
+                    messageEl.textContent = 'Las contraseñas no coinciden o están vacías.';
+                    messageEl.style.color = 'red';
+                    return;
+                }
+
+                const { error } = await supabase.auth.updateUser({ password });
+
+                if (error) {
+                    messageEl.textContent = error.message;
+                    messageEl.style.color = 'red';
+                } else {
+                    messageEl.textContent = 'Contraseña actualizada con éxito. Ya puedes iniciar sesión.';
+                    messageEl.style.color = 'green';
+                }
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Restablecer contraseña</h1>
+        <form id="reset-form">
+            <input type="password" id="password" placeholder="Nueva contraseña" required />
+            <input type="password" id="confirm-password" placeholder="Confirmar contraseña" required />
+            <button type="submit">Actualizar contraseña</button>
+            <div id="message" class="message"></div>
+        </form>
+    </div>
+</body>
+
+</html>
