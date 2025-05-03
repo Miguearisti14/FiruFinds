@@ -1,5 +1,13 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Text, Alert, ImageBackground } from 'react-native';
+import {
+    View,
+    StyleSheet,
+    Text,
+    Alert,
+    ImageBackground,
+    SafeAreaView,
+    StatusBar
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import { Input, Button } from '@rneui/themed';
 import { supabase } from '../lib/supabase';
@@ -15,7 +23,6 @@ export default function RegisterScreen() {
     async function signUpWithEmail() {
         setLoading(true);
 
-        // Crear usuario en Supabase Authentication
         const { data, error } = await supabase.auth.signUp({
             email: email,
             password: password
@@ -30,12 +37,11 @@ export default function RegisterScreen() {
         const user = data.user;
 
         if (user) {
-            // Insertar datos en la tabla usuarios
             const { error: profileError } = await supabase
                 .from('usuarios')
                 .insert([
                     {
-                        id: user.id, // El ID del usuario en auth.users
+                        id: user.id,
                         display_name: name,
                         phone,
                         email
@@ -46,7 +52,7 @@ export default function RegisterScreen() {
                 Alert.alert('Error', `Registro exitoso, pero hubo un problema guardando tu perfil: ${profileError.message}`);
             } else {
                 Alert.alert('Registro exitoso', 'Ya puedes iniciar sesión');
-                router.push('/'); // Redirige a la pantalla principal después del registro
+                router.push('/');
             }
         }
 
@@ -54,24 +60,28 @@ export default function RegisterScreen() {
     }
 
     return (
-        <ImageBackground
-            source={require('../assets/images/fondo.png')}
-            style={styles.background}
-            resizeMode="cover" // 'cover', 'contain', 'stretch', etc.
-        >
-            <View style={styles.container}>
-                <Text style={styles.title}>Registrarse</Text>
+        <SafeAreaView style={{ flex: 1 }}>
+            <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
+            <ImageBackground
+                source={require('../assets/images/fondo.png')}
+                style={styles.background}
+                resizeMode="cover"
+            >
+                <View style={styles.container}>
+                    <Text style={styles.title}>Registrarse</Text>
 
-                <Input label="Nombre" inputContainerStyle={styles.inputBox} value={name} onChangeText={setName} placeholder="Tu nombre" />
-                <Input label="Email" inputContainerStyle={styles.inputBox} value={email} onChangeText={setEmail} placeholder="superhero@email.com" autoCapitalize="none" />
-                <Input label="Teléfono" inputContainerStyle={styles.inputBox} value={phone} onChangeText={setPhone} placeholder="23234389" keyboardType="phone-pad" />
-                <Input label="Contraseña" inputContainerStyle={styles.inputBox} value={password} onChangeText={setPassword} secureTextEntry placeholder="Tu contraseña" />
+                    <Input label="Nombre" inputContainerStyle={styles.inputBox} value={name} onChangeText={setName} placeholder="Tu nombre" />
+                    <Input label="Email" inputContainerStyle={styles.inputBox} value={email} onChangeText={setEmail} placeholder="superhero@email.com" autoCapitalize="none" />
+                    <Input label="Teléfono" inputContainerStyle={styles.inputBox} value={phone} onChangeText={setPhone} placeholder="23234389" keyboardType="phone-pad" />
+                    <Input label="Contraseña" inputContainerStyle={styles.inputBox} value={password} onChangeText={setPassword} secureTextEntry placeholder="Tu contraseña" />
 
-                <Button title="Registrarse" onPress={signUpWithEmail} loading={loading} buttonStyle={styles.button} />
-            </View>
-        </ImageBackground>
+                    <Button title="Registrarse" onPress={signUpWithEmail} loading={loading} buttonStyle={styles.button} />
+                </View>
+            </ImageBackground>
+        </SafeAreaView>
     );
 }
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -84,7 +94,6 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#4A3F35',
         marginBottom: 20,
-
     },
     button: {
         backgroundColor: '#F4A83D',
@@ -92,7 +101,7 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
         width: '100%',
         marginTop: 20,
-        maxWidth: '95%'
+        maxWidth: '95%',
     },
     background: {
         flex: 1,
@@ -100,6 +109,6 @@ const styles = StyleSheet.create({
     inputBox: {
         borderBottomWidth: 1,
         borderBottomColor: '#4A3F35',
-        backgroundColor: '#FFF'
+        backgroundColor: '#FFF',
     },
 });

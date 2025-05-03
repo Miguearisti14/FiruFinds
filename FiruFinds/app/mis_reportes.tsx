@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, ActivityIndicator, SafeAreaView, StatusBar } from 'react-native';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { useRouter } from 'expo-router';
 import { supabase } from '../lib/supabase';
@@ -44,11 +44,11 @@ function LostReportsScreen({ userId }: { userId: string }) {
     }
 
     return (
-
         <FlatList
             data={lostReports}
             numColumns={2}
-            contentContainerStyle={styles.list}
+            contentContainerStyle={[styles.list, { backgroundColor: '#FFF' }]}
+            style={{ backgroundColor: '#FFF' }}
             keyExtractor={(item) => item.id.toString()}
             renderItem={({ item }) => (
                 <TouchableOpacity
@@ -69,6 +69,7 @@ function LostReportsScreen({ userId }: { userId: string }) {
                 </View>
             }
         />
+
     );
 }
 
@@ -104,7 +105,8 @@ function FoundReportsScreen({ userId }: { userId: string }) {
         <FlatList
             data={foundReports}
             numColumns={2}
-            contentContainerStyle={styles.list}
+            contentContainerStyle={[styles.list, { backgroundColor: '#FFF' }]}
+            style={{ backgroundColor: '#FFF' }}
             keyExtractor={(item) => item.id.toString()}
             renderItem={({ item }) => (
                 <TouchableOpacity
@@ -152,39 +154,52 @@ export default function MisReportes() {
     }
 
     return (
+
         <View style={styles.container}>
 
-            <Text style={styles.title}>Mis Reportes</Text>
+            <SafeAreaView style={styles.safeArea}>
+                <StatusBar
+                    barStyle="dark-content"
+                    backgroundColor="#FFF"
+                    translucent={false}
+                />
+                <Text style={styles.title}>Mis Reportes</Text>
 
-            <TouchableOpacity
-                onPress={() => router.push('/perfil')}
-                style={styles.closeButtonContainer}
-            >
-                <Ionicons name="close" size={24} color="#333" />
-            </TouchableOpacity>
+                <TouchableOpacity
+                    onPress={() => router.push('/perfil')}
+                    style={styles.closeButtonContainer}
+                >
+                    <Ionicons name="close" size={24} color="#333" />
+                </TouchableOpacity>
 
 
-            <Tab.Navigator
-                screenOptions={{
-                    tabBarActiveTintColor: '#F4A83D',
-                    tabBarInactiveTintColor: 'gray',
-                    tabBarIndicatorStyle: { backgroundColor: '#F4A83D' },
-                    tabBarStyle: { backgroundColor: '#FFF' },
-                }}
-            >
-                <Tab.Screen name="Perdidos">
-                    {() => <LostReportsScreen userId={userId} />}
-                </Tab.Screen>
-                <Tab.Screen name="Encontrados">
-                    {() => <FoundReportsScreen userId={userId} />}
-                </Tab.Screen>
-            </Tab.Navigator>
+                <Tab.Navigator
+                    screenOptions={{
+                        tabBarActiveTintColor: '#F4A83D',
+                        tabBarInactiveTintColor: 'gray',
+                        tabBarIndicatorStyle: { backgroundColor: '#F4A83D' },
+                        tabBarStyle: { backgroundColor: '#FFF' },
+                    }}
+                >
+                    <Tab.Screen name="Perdidos">
+                        {() => <LostReportsScreen userId={userId} />}
+                    </Tab.Screen>
+                    <Tab.Screen name="Encontrados">
+                        {() => <FoundReportsScreen userId={userId} />}
+                    </Tab.Screen>
+                </Tab.Navigator>
+            </SafeAreaView>
 
         </View>
+
     );
 }
 
 const styles = StyleSheet.create({
+    safeArea: {
+        flex: 1,
+        backgroundColor: '#FFFFFF'
+    },
     container: {
         flex: 1,
         backgroundColor: '#FFF',

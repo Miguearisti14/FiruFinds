@@ -1,5 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator, StyleSheet, Image, ImageBackground } from 'react-native';
+import {
+    View,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    FlatList,
+    ActivityIndicator,
+    StyleSheet,
+    Image,
+    ImageBackground,
+} from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { supabase } from '../../lib/supabase';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -160,6 +170,7 @@ const Buscar = () => {
             style={styles.background}
             resizeMode="cover" // 'cover', 'contain', 'stretch', etc.
         >
+
             <View style={styles.container}>
                 <Text style={styles.title}>FiruFinds</Text>
                 <Text style={styles.subtitle}>Buscar Reportes</Text>
@@ -323,7 +334,9 @@ const styles = StyleSheet.create({
         borderBottomColor: '#eee'
     },
     resultText: {
-        fontSize: 16
+        textAlign: 'center',
+        fontSize: 19,
+
     },
     noResults: {
         textAlign: 'center',
@@ -345,10 +358,11 @@ const styles = StyleSheet.create({
     image: {
         width: '60%',
         height: 170,
-        borderRadius: 16,
+        borderRadius: 30,
         marginBottom: 20,
         resizeMode: 'cover',
-        marginTop: 10
+        marginTop: 10,
+        alignSelf: 'center'
     },
     background: {
         flex: 1,
