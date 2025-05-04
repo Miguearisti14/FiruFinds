@@ -16,23 +16,18 @@ export default function ForgotPassword() {
         }
         setLoading(true);
         try {
-            const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-                // Apunta aquí a la URL pública donde está tu index.html
-                redirectTo: 'https://miguearisti14.github.io/FiruFinds/'
+            const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: 'https://tudominio.com/index.html'
             });
 
             if (error) {
                 console.error('Reset password error:', error);
                 Alert.alert('Error', error.message);
             } else {
-                Alert.alert(
-                    'Correo enviado',
-                    'Revisa tu correo electrónico para restablecer tu contraseña.'
-                );
+                Alert.alert('Correo enviado', 'Revisa tu correo para restablecer tu contraseña.');
                 router.push('/Auth');
             }
-        } catch (err) {
-            console.error('Unexpected error:', err);
+        } catch {
             Alert.alert('Error', 'Ocurrió un error inesperado. Intenta nuevamente.');
         } finally {
             setLoading(false);
@@ -58,7 +53,6 @@ export default function ForgotPassword() {
                         keyboardType="email-address"
                         inputContainerStyle={styles.inputBox}
                     />
-
                     <Button
                         title="Restablecer contraseña"
                         onPress={handleResetPassword}
@@ -67,7 +61,6 @@ export default function ForgotPassword() {
                         titleStyle={styles.buttonText}
                         containerStyle={styles.buttonContainer}
                     />
-
                     <View style={styles.linkContainer}>
                         <Button
                             type="clear"
