@@ -16,7 +16,6 @@ import { createMaterialTopTabNavigator } from '@react-navigation/material-top-ta
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { supabase } from '../../lib/supabase';
-import { registerForPushNotificationsAsync, setupNotificationListeners } from '../../utils/notifications';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 
@@ -160,10 +159,7 @@ function FoundPetsScreen() {
 export default function Home() {
     const router = useRouter();
 
-    useEffect(() => {
-        const cleanup = setupNotificationListeners();
-        return cleanup;
-    }, []);
+
 
     // Salir de la app con el botón atrás del celular
     useFocusEffect(
