@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import {
     Alert,
     StyleSheet,
@@ -9,56 +9,44 @@ import {
     ImageBackground,
     StatusBar,
     SafeAreaView,
-} from 'react-native';
-import { supabase } from '../lib/supabase';
-import { Button, Input } from '@rneui/themed';
-import { useRouter } from 'expo-router';
-import { registerForPushNotificationsAsync } from '../utils/notifications';
+} from 'react-native'; import { supabase } from '../lib/supabase'
+import { Button, Input } from '@rneui/themed'
+import { Link, useRouter } from 'expo-router';
+
 
 AppState.addEventListener('change', (state) => {
     if (state === 'active') {
-        supabase.auth.startAutoRefresh();
+        supabase.auth.startAutoRefresh()
     } else {
-        supabase.auth.stopAutoRefresh();
+        supabase.auth.stopAutoRefresh()
     }
-});
+})
 
 export default function Auth() {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [loading, setLoading] = useState(false);
+    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
+    const [loading, setLoading] = useState(false)
     const router = useRouter();
+
 
     async function signInWithEmail() {
         setLoading(true);
-        try {
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email,
-                password,
-            });
 
-            if (error) {
-                Alert.alert(error.message);
-                return false;
-            }
+        const { error } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+        });
 
-            if (data.user) {
-                try {
-                    await registerForPushNotificationsAsync(data.user.id);
-                } catch (notificationError) {
-                    Alert.alert('Advertencia', 'No se pudo registrar las notificaciones push.');
-                }
-                return true;
-            }
+        setLoading(false);
 
-            return false;
-        } catch (error) {
-            Alert.alert('Error', 'Ocurrió un error inesperado.');
-            return false;
-        } finally {
-            setLoading(false);
+        if (error) {
+            Alert.alert(error.message);
+            return false; // Indica que falló el inicio de sesión
         }
+
+        return true; // Indica que fue exitoso
     }
+
 
     return (
         <SafeAreaView style={{ flex: 1 }}>
@@ -75,7 +63,7 @@ export default function Auth() {
                         <Input
                             label="Correo"
                             labelStyle={styles.label}
-                            onChangeText={setEmail}
+                            onChangeText={(text) => setEmail(text)}
                             value={email}
                             placeholder="ejemplo@gmail.com"
                             autoCapitalize="none"
@@ -87,22 +75,23 @@ export default function Auth() {
                         <Input
                             label="contraseña"
                             labelStyle={styles.label}
-                            onChangeText={setPassword}
+                            onChangeText={(text) => setPassword(text)}
                             value={password}
-                            secureTextEntry
+                            secureTextEntry={true}
                             placeholder="tu contraseña"
                             autoCapitalize="none"
                             inputContainerStyle={styles.inputBox}
                         />
                     </View>
 
-
                     <Button
                         title="Iniciar Sesión"
                         disabled={loading}
                         onPress={async () => {
-                            const success = await signInWithEmail();
-                            if (success) router.push('/(tabs)/home');
+                            const success = await signInWithEmail(); // Espera el resultado
+                            if (success) {
+                                router.push('/(tabs)/home'); // Redirige solo si fue exitoso
+                            }
                         }}
                         buttonStyle={styles.button}
                         titleStyle={styles.buttonText}
@@ -115,6 +104,7 @@ export default function Auth() {
                     <TouchableOpacity onPress={() => router.push('/recuperar')} style={styles.linkContainer}>
                         <Text style={styles.linkText}>Recuperar contraseña</Text>
                     </TouchableOpacity>
+
                 </View>
             </ImageBackground>
         </SafeAreaView>
@@ -127,6 +117,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         paddingHorizontal: 20,
+        textAlign: 'left'
     },
     title: {
         fontSize: 28,
@@ -147,7 +138,6 @@ const styles = StyleSheet.create({
     inputBox: {
         borderBottomWidth: 1,
         borderBottomColor: '#4A3F35',
-        backgroundColor: '#FFF',
     },
     button: {
         backgroundColor: '#F4A83D',
@@ -155,7 +145,7 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
         width: '100%',
         marginTop: 20,
-        maxWidth: '95%',
+        maxWidth: '95%'
     },
     buttonText: {
         fontSize: 16,

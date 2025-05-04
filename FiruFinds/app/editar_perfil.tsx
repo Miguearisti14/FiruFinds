@@ -198,10 +198,14 @@ export default function EditarPerfil() {
 
                     <ScrollView contentContainerStyle={styles.scrollContent}>
                         <TouchableOpacity onPress={showImageOptions} style={styles.profileImageContainer}>
-                            <Image
-                                source={{ uri: `${profileImage}?cb=${cacheBuster}` }}
-                                style={styles.profileImage}
-                            />
+                            {profileImage === 'https://via.placeholder.com/100' ? (
+                                <View style={styles.placeholderCircle} />
+                            ) : (
+                                <Image
+                                    source={{ uri: `${profileImage}?cb=${cacheBuster}` }}
+                                    style={styles.profileImage}
+                                />
+                            )}
                         </TouchableOpacity>
 
                         <Text style={styles.label}>Nombre</Text>
@@ -349,5 +353,11 @@ const styles = StyleSheet.create({
         top: 10,
         right: 10,
         zIndex: 1,
+    },
+    placeholderCircle: {
+        width: 100,
+        height: 100,
+        borderRadius: 50,
+        backgroundColor: '#ccc',
     },
 });
