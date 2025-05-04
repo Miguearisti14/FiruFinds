@@ -17,7 +17,7 @@ export default function ForgotPassword() {
         setLoading(true);
         try {
             const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                redirectTo: 'https://tudominio.com/index.html'
+                redirectTo: 'https://miguearisti14.github.io/FiruFinds/'
             });
 
             if (error) {
