@@ -9,7 +9,6 @@ export default function ForgotPassword() {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
 
-
     const handleResetPassword = async () => {
         if (!email) {
             Alert.alert('Error', 'Por favor ingresa tu correo electrónico.');
@@ -17,7 +16,11 @@ export default function ForgotPassword() {
         }
         setLoading(true);
         try {
-            const { data, error } = await supabase.auth.resetPasswordForEmail(email);
+            const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+                // Apunta aquí a la URL pública donde está tu index.html
+                redirectTo: 'https://miguearisti14.github.io/FiruFinds/'
+            });
+
             if (error) {
                 console.error('Reset password error:', error);
                 Alert.alert('Error', error.message);
@@ -26,7 +29,6 @@ export default function ForgotPassword() {
                     'Correo enviado',
                     'Revisa tu correo electrónico para restablecer tu contraseña.'
                 );
-                // Opcional: redirigir al login
                 router.push('/Auth');
             }
         } catch (err) {

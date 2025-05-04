@@ -59,17 +59,32 @@
         }
     </style>
     <script type="module">
-        import { createClient } from 'https://esm.sh/@supabase/supabase-js'
+        import { createClient } from 'https://esm.sh/@supabase/supabase-js';
 
-        const supabase = createClient('https://ktdbdkitrhplhtjanehc.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0ZGJka2l0cmhwbGh0amFuZWhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIzMzcwMjMsImV4cCI6MjA1NzkxMzAyM30.RrvQwDLEN-ysB5Hiyh-rYkWtXyhTsXWps77tN4Ix1Pk')
+        const supabase = createClient(
+            'https://ktdbdkitrhplhtjanehc.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0ZGJka2l0cmhwbGh0amFuZWhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIzMzcwMjMsImV4cCI6MjA1NzkxMzAyM30.RrvQwDLEN-ysB5Hiyh-rYkWtXyhTsXWps77tN4Ix1Pk'
+        );
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            const messageEl = document.querySelector('#message');
+
+            // 1) Captura tokens de la URL y guarda la sesión
+            const { data, error: sessionError } = await supabase.auth.getSessionFromUrl({
+                storeSession: true
+            });
+
+            if (sessionError) {
+                messageEl.textContent = sessionError.message;
+                messageEl.style.color = 'red';
+                return;
+            }
+
+            // 2) Ahora la sesión está activa, enganchamos el form
             document.querySelector('#reset-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
-
                 const password = document.querySelector('#password').value;
                 const confirm = document.querySelector('#confirm-password').value;
-                const messageEl = document.querySelector('#message');
 
                 if (!password || password !== confirm) {
                     messageEl.textContent = 'Las contraseñas no coinciden o están vacías.';
@@ -77,6 +92,7 @@
                     return;
                 }
 
+                // 3) Actualiza la contraseña usando la sesión activa
                 const { error } = await supabase.auth.updateUser({ password });
 
                 if (error) {
