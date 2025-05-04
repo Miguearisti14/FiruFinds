@@ -3,23 +3,29 @@
 
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Recuperar Contraseña</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Restablecer Contraseña</title>
     <style>
+        /* Reset básico */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: sans-serif;
             background-color: #f9f9f9;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
+            min-height: 100vh;
+            padding: 20px;
         }
 
         .container {
             background-color: #fff;
-            padding: 30px;
+            padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             width: 100%;
@@ -27,7 +33,7 @@
         }
 
         h1 {
-            font-size: 20px;
+            font-size: 1.5rem;
             color: #333;
             margin-bottom: 20px;
             text-align: center;
@@ -39,23 +45,45 @@
             margin-bottom: 15px;
             border: 1px solid #ccc;
             border-radius: 6px;
+            font-size: 1rem;
         }
 
         button {
             width: 100%;
-            background-color: #f4a83d;
-            color: white;
-            border: none;
             padding: 12px;
+            font-size: 1rem;
+            background-color: #f4a83d;
+            color: #fff;
+            border: none;
             border-radius: 6px;
             font-weight: bold;
             cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #e3a12f;
         }
 
         .message {
             margin-top: 15px;
             text-align: center;
-            font-size: 14px;
+            font-size: 0.9rem;
+        }
+
+        @media (min-width: 480px) {
+            .container {
+                padding: 30px;
+            }
+
+            h1 {
+                font-size: 1.75rem;
+            }
+
+            input,
+            button {
+                font-size: 1.1rem;
+            }
         }
     </style>
     <script type="module">
@@ -68,33 +96,40 @@
 
         document.addEventListener('DOMContentLoaded', async () => {
             const messageEl = document.querySelector('#message');
+            const hash = window.location.hash.substring(1);
+            const params = new URLSearchParams(hash);
+            const access_token = params.get('access_token');
+            const refresh_token = params.get('refresh_token');
 
-            // 1) Captura tokens de la URL y guarda la sesión
-            const { data, error: sessionError } = await supabase.auth.getSessionFromUrl({
-                storeSession: true
-            });
-
-            if (sessionError) {
-                messageEl.textContent = sessionError.message;
+            if (access_token && refresh_token) {
+                const { error: sessionError } = await supabase.auth.setSession({
+                    access_token,
+                    refresh_token
+                });
+                if (sessionError) {
+                    messageEl.textContent = sessionError.message;
+                    messageEl.style.color = 'red';
+                    return;
+                }
+                history.replaceState(null, '', window.location.pathname);
+            } else {
+                messageEl.textContent = 'No se encontraron tokens en la URL.';
                 messageEl.style.color = 'red';
                 return;
             }
 
-            // 2) Ahora la sesión está activa, enganchamos el form
             document.querySelector('#reset-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const password = document.querySelector('#password').value;
-                const confirm = document.querySelector('#confirm-password').value;
+                const pwd = document.querySelector('#password').value;
+                const conf = document.querySelector('#confirm-password').value;
 
-                if (!password || password !== confirm) {
+                if (!pwd || pwd !== conf) {
                     messageEl.textContent = 'Las contraseñas no coinciden o están vacías.';
                     messageEl.style.color = 'red';
                     return;
                 }
 
-                // 3) Actualiza la contraseña usando la sesión activa
-                const { error } = await supabase.auth.updateUser({ password });
-
+                const { error } = await supabase.auth.updateUser({ password: pwd });
                 if (error) {
                     messageEl.textContent = error.message;
                     messageEl.style.color = 'red';
