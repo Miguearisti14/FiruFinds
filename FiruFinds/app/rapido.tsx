@@ -533,7 +533,6 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingRight: 10,
     },
-    // Estilos para el dropdown
     dropdownContainer: {
         marginBottom: 15,
     },

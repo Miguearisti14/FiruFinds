@@ -224,6 +224,7 @@ const styles = StyleSheet.create({
         width: 100,
         height: 100,
         marginVertical: 10,
+        borderRadius: 20
     },
     closeButton: {
         marginTop: 10,
