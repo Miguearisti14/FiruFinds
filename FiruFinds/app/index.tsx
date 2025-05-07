@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 42,
         fontWeight: 'bold',
-        color: '#4a3b2f', // Marrón oscuro similar al de la imagen
+        color: '#4a3b2f',
         marginBottom: 40,
         marginTop: '50%'
     },
@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
         paddingVertical: 14,
         paddingHorizontal: 40,
         borderRadius: 12,
-        elevation: 3, // Efecto de sombra sutil
+        elevation: 3,
         marginBottom: 20,
     },
     buttonText: {
